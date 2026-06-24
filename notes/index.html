@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes notes — AviHub</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="../actualites.html">Actualités</a></li>
+    <li><a href="../histoire.html">Histoire</a></li>
+    <li><a href="../bia/index.html">Fiches BIA</a></li>
+    <li><a href="../checklist/dr400.html">Checklist DR400</a></li>
+    <li><a href="index.html" class="active">Mes notes</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="page-title">📝 Mes notes de cours</div>
+  <div class="page-subtitle">Notes GoodNotes exportées en PDF — classées par matière</div>
+
+  <!-- Instructions si aucun PDF -->
+  <div id="instructions" class="card" style="margin-bottom:1.5rem; border-color: var(--accent2);">
+    <div class="card-source" style="color:var(--accent2)">📋 Comment ajouter tes notes</div>
+    <div style="font-size:.88rem; line-height:1.8; margin-top:.5rem; color:var(--text)">
+      <strong>Depuis GoodNotes :</strong><br>
+      1. Ouvre ton carnet de cours → ⋯ → <em>Exporter</em> → <em>PDF</em><br>
+      2. Copie le fichier PDF dans le dossier <code style="background:var(--bg3);padding:.1rem .3rem;border-radius:3px">avihub/notes/</code><br>
+      3. Ajoute le fichier dans la liste ci-dessous (dans <code>notes/index.html</code>)<br><br>
+      <strong>Exemple :</strong> <code>{ "titre": "Météorologie", "fichier": "meteo.pdf", "matiere": "meteo" }</code>
+    </div>
+  </div>
+
+  <!-- Filtres matières -->
+  <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.5rem;" id="filtres-notes">
+    <button class="filtre-btn active" data-m="all">Toutes</button>
+    <button class="filtre-btn" data-m="aeronefs">Aéronefs</button>
+    <button class="filtre-btn" data-m="meteo">Météo</button>
+    <button class="filtre-btn" data-m="nav">Navigation</button>
+    <button class="filtre-btn" data-m="meca">Mécanique du vol</button>
+    <button class="filtre-btn" data-m="reglementation">Réglementation</button>
+    <button class="filtre-btn" data-m="histoire">Histoire</button>
+  </div>
+
+  <!-- Liste des notes (à remplir) -->
+  <div class="grid grid-3" id="notes-list"></div>
+
+  <!-- Visionneuse PDF -->
+  <div id="pdf-viewer" style="display:none; margin-top:2rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+      <div class="page-title" style="font-size:1.1rem" id="pdf-titre">—</div>
+      <button onclick="closePDF()"
+        style="background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:6px;cursor:pointer;">
+        ✕ Fermer
+      </button>
+    </div>
+    <iframe id="pdf-frame" style="width:100%;height:80vh;border:1px solid var(--border);border-radius:var(--radius);background:#fff;"></iframe>
+  </div>
+</div>
+
+<style>
+.filtre-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: .35rem .85rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.filtre-btn:hover { border-color: var(--accent2); color: var(--text); }
+.filtre-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight:600; }
+
+.note-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.note-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.note-card .note-icon { font-size: 2rem; }
+.note-card .note-titre { font-size: .92rem; font-weight: 600; }
+.note-card .note-pages { font-size: .75rem; color: var(--muted); }
+
+.empty-notes {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+</style>
+
+<script>
+// ── Ajoute tes notes ici ──
+// Pour chaque PDF exporté depuis GoodNotes, ajoute un objet dans ce tableau.
+// "fichier" doit correspondre exactement au nom du fichier dans le dossier notes/
+const NOTES = [
+  // Exemples — décommente et adapte quand tu as tes PDFs :
+  // { titre: "Météorologie — cours complet", matiere: "meteo", fichier: "meteo.pdf", pages: "24 pages" },
+  // { titre: "Navigation — cartes et cap", matiere: "nav", fichier: "navigation.pdf", pages: "18 pages" },
+  // { titre: "Mécanique du vol", matiere: "meca", fichier: "meca-vol.pdf", pages: "12 pages" },
+  // { titre: "Connaissance des aéronefs", matiere: "aeronefs", fichier: "aeronefs.pdf", pages: "20 pages" },
+  // { titre: "Histoire de l'aviation", matiere: "histoire", fichier: "histoire.pdf", pages: "15 pages" },
+  // { titre: "Réglementation", matiere: "reglementation", fichier: "reglementation.pdf", pages: "10 pages" },
+];
+
+const ICONS = {
+  aeronefs: "✈️", meteo: "🌤️", nav: "🗺️",
+  meca: "🔬", reglementation: "📋", histoire: "🏛️", default: "📄"
+};
+
+let activeFilter = 'all';
+
+function renderNotes() {
+  const container = document.getElementById('notes-list');
+  const filtered = activeFilter === 'all' ? NOTES : NOTES.filter(n => n.matiere === activeFilter);
+
+  if (NOTES.length === 0) {
+    container.innerHTML = `
+      <div class="empty-notes">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">📭</div>
+        Aucune note ajoutée pour l'instant.<br>
+        <span style="font-size:.8rem">Exporte tes notes depuis GoodNotes en PDF puis suis les instructions ci-dessus.</span>
+      </div>`;
+    return;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-notes">Aucune note pour cette matière.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(n => `
+    <div class="note-card" onclick="openPDF('${n.fichier}', '${n.titre}')">
+      <div class="note-icon">${ICONS[n.matiere] || ICONS.default}</div>
+      <div class="note-titre">${n.titre}</div>
+      ${n.pages ? `<div class="note-pages">${n.pages}</div>` : ''}
+      <div style="font-size:.75rem;color:var(--accent2);margin-top:.25rem">📂 Ouvrir le PDF</div>
+    </div>
+  `).join('');
+}
+
+function openPDF(fichier, titre) {
+  document.getElementById('pdf-titre').textContent = titre;
+  document.getElementById('pdf-frame').src = fichier;
+  document.getElementById('pdf-viewer').style.display = 'block';
+  document.getElementById('pdf-viewer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closePDF() {
+  document.getElementById('pdf-viewer').style.display = 'none';
+  document.getElementById('pdf-frame').src = '';
+}
+
+document.getElementById('filtres-notes').addEventListener('click', e => {
+  const btn = e.target.closest('.filtre-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.m;
+  renderNotes();
+});
+
+renderNotes();
+</script>
+
+</body>
+</html>
