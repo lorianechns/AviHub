@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiches BIA — AviHub</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="../actualites.html">Actualités</a></li>
+    <li><a href="../histoire.html">Histoire</a></li>
+    <li><a href="index.html" class="active">Fiches BIA</a></li>
+    <li><a href="../checklist/dr400.html">Checklist DR400</a></li>
+    <li><a href="../notes/index.html">Mes notes</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="page-title">📚 Fiches de révision BIA</div>
+  <div class="page-subtitle">Brevet d'Initiation Aéronautique — résumés par matière</div>
+
+  <!-- Barre de recherche -->
+  <input type="search" id="search" placeholder="🔍 Rechercher dans les fiches…"
+    style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;border-radius:8px;font-size:.9rem;margin-bottom:1.5rem;outline:none;">
+
+  <div id="accordion-container"></div>
+</div>
+
+<script>
+const FICHES = [
+  {
+    matiere: "✈️ Connaissance des aéronefs",
+    badge: "badge-amber",
+    sous: [
+      {
+        titre: "Cellule & structure",
+        points: [
+          "Fuselage : structure principale reliant tous les éléments",
+          "Voilure : ailes générant la portance (profil cambré)",
+          "Empennage : surfaces de stabilisation et contrôle (horizontal + vertical)",
+          "Train d'atterrissage : tricycle ou classique (roulette de queue)",
+          "Gouvernes : aileron (roulis), gouverne de profondeur (tangage), gouverne de direction (lacet)"
+        ]
+      },
+      {
+        titre: "Moteur & hélice",
+        points: [
+          "Moteur à pistons 4 temps : admission → compression → explosion → échappement",
+          "Hélice à pas fixe ou variable (gouverneur de pas)",
+          "Refroidissement par air (cylindres en étoile ou à plat)",
+          "Magnétos : allumage indépendant du circuit électrique (test : position BOTH)",
+          "Carburateur : richesse mélange air/carburant — risque givrage (carburation froide)",
+          "Injection directe : plus efficace, pas de risque de givrage"
+        ]
+      },
+      {
+        titre: "Instruments de bord",
+        points: [
+          "Badin (anémomètre) : vitesse par rapport à l'air (pression dynamique Pitot)",
+          "Altimètre : altitude par pression statique — calage QNH / QFE / 1013 hPa",
+          "Variomètre : taux de montée/descente en ft/min ou m/s",
+          "Horizon artificiel (ADI) : assiette tangage/roulis — gyroscopique",
+          "Conservateur de cap (DI) : cap magnétique — gyroscopique, doit être recalé sur le compas",
+          "Compas magnétique : déviation + déclinaison → cap vrai"
+        ]
+      }
+    ]
+  },
+  {
+    matiere: "🌤️ Météorologie",
+    badge: "badge-blue",
+    sous: [
+      {
+        titre: "Atmosphère & pression",
+        points: [
+          "Atmosphère standard OACI : 1013,25 hPa, 15°C au niveau de la mer",
+          "Gradient thermique standard : −6,5°C / 1 000 m",
+          "Tropopause : ~11 km — limite des phénomènes météo",
+          "Anticyclone : hautes pressions → temps stable, vent faible, beau temps",
+          "Dépression : basses pressions → temps perturbé, vents forts, nuages, pluie"
+        ]
+      },
+      {
+        titre: "Vents",
+        points: [
+          "Vent : déplacement de l'air des HP vers les BP (dévié par Coriolis)",
+          "Dans l'hémisphère nord : circulation anticyclonique = sens horaire",
+          "Vent de face : augmente la portance et réduit la distance au décollage",
+          "Effet de sol : réduction de la traînée induite près du sol",
+          "Cisaillement : variation brusque de vitesse/direction → dangereux à l'approche"
+        ]
+      },
+      {
+        titre: "Nuages & visibilité",
+        points: [
+          "Nuages bas (0–2 000 m) : St (stratus), Sc (stratocumulus), Ns (nimbostratus)",
+          "Nuages moyens (2–6 km) : As (altostratus), Ac (altocumulus)",
+          "Nuages hauts (>6 km) : Ci (cirrus), Cc (cirrocumulus), Cs (cirrostratus)",
+          "Développement vertical : Cu (cumulus), Cb (cumulonimbus) → orage, turbulences sévères",
+          "Brouillard : visibilité < 1 000 m — formé par refroidissement ou advection",
+          "VMC (Visual Meteorological Conditions) : visi ≥ 5 km, hors nuages"
+        ]
+      },
+      {
+        titre: "Givrage & turbulences",
+        points: [
+          "Givrage : eau surfondue → accumulation de glace sur les surfaces",
+          "Types : givrage clair (dangereux), givre blanc (moins adhérent)",
+          "Turbulences : convectives (Cb), orographiques (relief), de sillage",
+          "METAR : observation météo d'aérodrome (toutes les heures)",
+          "TAF : prévision de terminal (9h ou 24h)"
+        ]
+      }
+    ]
+  },
+  {
+    matiere: "🗺️ Navigation",
+    badge: "badge-green",
+    sous: [
+      {
+        titre: "Cartographie",
+        points: [
+          "Cartes OACI 1/500 000 : navigation VFR en France",
+          "Méridiens : lignes nord-sud — longitude (°E/°W)",
+          "Parallèles : lignes est-ouest — latitude (°N/°S)",
+          "Rose des vents : 360° — N=000, E=090, S=180, W=270",
+          "Relief : courbes de niveau (isohypses), points côtés",
+          "Symboles : aérodromes, zones réglementées, obstacles, fréquences"
+        ]
+      },
+      {
+        titre: "Cap & route",
+        points: [
+          "Cap vrai (Cv) : angle / nord géographique",
+          "Déclinaison magnétique (d) : différence nord vrai / nord magnétique",
+          "Cap magnétique (Cm) = Cv − d (W+, E−) en France",
+          "Déviation du compas (δ) : erreur propre à l'appareil",
+          "Cap compas (Cc) = Cm − δ",
+          "Dérive : angle entre route suivie et cap maintenu (vent traversier)"
+        ]
+      },
+      {
+        titre: "Calcul de navigation",
+        points: [
+          "Vitesse propre (VP) : vitesse / masse d'air",
+          "Vitesse sol (VS) : vitesse / sol (VP ± composante vent)",
+          "Distance = Vitesse sol × Temps",
+          "Heure estimée d'arrivée (HEA) = Heure de départ + durée de vol",
+          "Autonomie = Quantité de carburant / Consommation horaire",
+          "Point de non-retour (PNR) : point au-delà duquel il est plus court de continuer"
+        ]
+      },
+      {
+        titre: "Radionavigation",
+        points: [
+          "VOR (VHF Omnidirectional Range) : relèvement magnétique depuis la station",
+          "NDB (Non Directional Beacon) : radiocompas (ADF) → relèvement",
+          "ILS (Instrument Landing System) : alignement piste + plan de descente",
+          "GPS : navigation par satellites — précision métrique",
+          "Transpondeur : code SSR (squawk) — 7700 urgence, 7600 panne radio, 7500 détournement"
+        ]
+      }
+    ]
+  },
+  {
+    matiere: "🔬 Mécanique du vol",
+    badge: "badge-amber",
+    sous: [
+      {
+        titre: "Les 4 forces",
+        points: [
+          "Portance (L) : force perpendiculaire au vent relatif — générée par la voilure",
+          "Traînée (D) : force opposée au mouvement — frottements + traînée induite",
+          "Poids (W) : vers le bas — centre de gravité",
+          "Poussée (T) : vers l'avant — moteur/hélice",
+          "Vol rectiligne uniforme : L=W et T=D"
+        ]
+      },
+      {
+        titre: "Portance & finesse",
+        points: [
+          "L = ½ ρ V² S Cz  (densité, vitesse², surface alaire, coeff portance)",
+          "Angle d'incidence : angle entre corde du profil et vent relatif",
+          "Décrochage : incidence dépasse l'angle critique → perte de portance brutale",
+          "Vitesse de décrochage augmente avec le facteur de charge (virage incliné)",
+          "Finesse = Portance/Traînée = Distance planée / Altitude perdue"
+        ]
+      },
+      {
+        titre: "Facteur de charge & vitesses",
+        points: [
+          "Facteur de charge n = L/W — virage à 60° : n=2g",
+          "Vne : vitesse à ne jamais dépasser (rouge)",
+          "Vno : vitesse maximale en air turbulent",
+          "Va : vitesse de manœuvre — protection structure",
+          "Vs : vitesse de décrochage (volets rentrés)",
+          "Vfe : vitesse maximale volets sortis"
+        ]
+      },
+      {
+        titre: "Stabilité & contrôle",
+        points: [
+          "Stabilité statique : tendance à revenir à l'équilibre initial",
+          "Stabilité dynamique : oscillations amorties dans le temps",
+          "Axe de tangage (Y) : gouverne de profondeur",
+          "Axe de roulis (X) : ailerons",
+          "Axe de lacet (Z) : gouverne de direction",
+          "Lacet inverse : roulis → lacet opposé par la traînée d'aileron baissé"
+        ]
+      }
+    ]
+  },
+  {
+    matiere: "📋 Réglementation",
+    badge: "badge-blue",
+    sous: [
+      {
+        titre: "Espaces aériens",
+        points: [
+          "Classe A : IFR uniquement — altitude de croisière > FL195",
+          "Classe C : contrôlé — autorisation obligatoire VFR et IFR",
+          "Classe D : contrôlé — contact radio obligatoire",
+          "Classe E : contrôlé pour IFR, VFR non contrôlé mais avec séparation",
+          "Classe G : non contrôlé — VFR libre sous certaines conditions VMC",
+          "CTR : zone de contrôle autour d'un aérodrome contrôlé (rayon ~10 NM)"
+        ]
+      },
+      {
+        titre: "Règles de vol VFR",
+        points: [
+          "VFR de jour : visibilité ≥ 5 km, hors nuages (distances réglementaires)",
+          "Altitude mini VFR : 300 m / 1 000 ft au-dessus du sol (zones peuplées)",
+          "Priorité : aéronef en détresse > ballon > planeur > avion > hélicoptère",
+          "Croisement : céder le passage à l'appareil qui vient par la droite",
+          "Dépassement : dépasser par la droite",
+          "Plan de vol : obligatoire hors zone locale selon les espaces"
+        ]
+      },
+      {
+        titre: "Documents de bord",
+        points: [
+          "CdN (Certificat de navigabilité)",
+          "CdI (Certificat d'immatriculation) — lettre F- pour la France",
+          "Licence station d'aéronef",
+          "Manuel de vol / RFMU",
+          "Assurance responsabilité civile",
+          "Licences des membres d'équipage"
+        ]
+      }
+    ]
+  },
+  {
+    matiere: "🏛️ Histoire de l'aviation",
+    badge: "badge-green",
+    sous: [
+      {
+        titre: "Les pionniers (avant 1914)",
+        points: [
+          "1783 : frères Montgolfier — premier vol humain en ballon (Pilâtre de Rozier)",
+          "1890 : Clément Ader — Éole, premier saut motorisé (non contrôlé)",
+          "1903 : frères Wright — Kitty Hawk, premier vol motorisé contrôlé (12 sec)",
+          "1906 : Santos-Dumont — 14-bis, premier vol officiel en Europe (220 m)",
+          "1909 : Louis Blériot traverse la Manche en monoplan (36 min 30 sec)",
+          "1909 : Grande Semaine de l'Aviation de Champagne à Reims — premier meeting aérien"
+        ]
+      },
+      {
+        titre: "Entre-deux-guerres (1919–1939)",
+        points: [
+          "1919 : première traversée de l'Atlantique Nord (Alcock & Brown, sans escale)",
+          "1927 : Charles Lindbergh — New York → Paris en solitaire (33h30)",
+          "1930 : Jean Mermoz traverse l'Atlantique Sud (Aéropostale)",
+          "1931 : Maryse Bastié — record de durée féminin (37h55)",
+          "Aéropostale : liaison postale Toulouse–Buenos Aires avec Mermoz, Saint-Exupéry, Guillaumet"
+        ]
+      },
+      {
+        titre: "Aviation militaire & guerres",
+        points: [
+          "1914–1918 : premier usage tactique de l'aviation — chasse, observation, bombardement",
+          "As de la Première Guerre : Guynemer, Fonck (France), von Richthofen (Allemagne)",
+          "1939–1945 : Bataille d'Angleterre (RAF vs Luftwaffe, été 1940)",
+          "P-51 Mustang, Spitfire, Me 109 : avions emblématiques de la WWII",
+          "1945 : bombes atomiques larguées par B-29 sur Hiroshima et Nagasaki"
+        ]
+      },
+      {
+        titre: "Ère des jets & exploration spatiale",
+        points: [
+          "1947 : Chuck Yeager — premier franchissement du mur du son (Bell X-1, Mach 1,06)",
+          "1957 : Spoutnik — premier satellite artificiel (URSS)",
+          "1961 : Youri Gagarine — premier vol spatial humain",
+          "1969 : Apollo 11 — premier alunissage (Neil Armstrong, Buzz Aldrin)",
+          "1969 : premier vol du Concorde (Toulouse)",
+          "2004 : SpaceShipOne — premier vol spatial privé suborbital"
+        ]
+      }
+    ]
+  }
+];
+
+function buildAccordion() {
+  const container = document.getElementById('accordion-container');
+  container.innerHTML = FICHES.map((f, i) => `
+    <div class="accordion-item" data-index="${i}">
+      <button class="accordion-header" onclick="toggleAccordion(${i})">
+        <span>${f.matiere} <span class="badge ${f.badge}" style="margin-left:.5rem">${f.sous.length} thèmes</span></span>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-${i}">
+        ${f.sous.map((s, j) => `
+          <div class="fiche" id="fiche-${i}-${j}">
+            <h4>${s.titre}</h4>
+            <ul>${s.points.map(p => `<li>${p}</li>`).join('')}</ul>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAccordion(i) {
+  const body = document.getElementById(`body-${i}`);
+  const btn = body.previousElementSibling;
+  body.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+// Recherche
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  if (!q) { buildAccordion(); return; }
+
+  const results = [];
+  FICHES.forEach(f => {
+    f.sous.forEach(s => {
+      const matched = s.points.filter(p => p.toLowerCase().includes(q));
+      if (matched.length || s.titre.toLowerCase().includes(q) || f.matiere.toLowerCase().includes(q)) {
+        results.push({ matiere: f.matiere, badge: f.badge, titre: s.titre, points: matched.length ? matched : s.points });
+      }
+    });
+  });
+
+  const container = document.getElementById('accordion-container');
+  if (results.length === 0) {
+    container.innerHTML = `<div class="loading" style="color:var(--muted)">Aucun résultat pour "${this.value}"</div>`;
+    return;
+  }
+  container.innerHTML = results.map(r => `
+    <div class="accordion-item">
+      <div class="accordion-header open" style="cursor:default">
+        <span>${r.matiere} — <em style="font-weight:400;color:var(--muted)">${r.titre}</em></span>
+      </div>
+      <div class="accordion-body open">
+        <div class="fiche">
+          <ul>${r.points.map(p => `<li>${p.replace(new RegExp(q,'gi'), m => `<mark style="background:#78350f;color:var(--accent);border-radius:2px">${m}</mark>`)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+  `).join('');
+});
+
+buildAccordion();
+</script>
+
+</body>
+</html>
