@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checklist DR400 — AviHub</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .cockpit-strip {
+      background: linear-gradient(135deg, #0d1b2a, #1a2f4a);
+      border: 1px solid #1e3a5f;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .gauge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .gauge-circle {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      border: 3px solid #1e3a5f;
+      background: #050d18;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gauge-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--success));
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .phase-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .phase-tab {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.15s;
+    }
+
+    .phase-tab:hover { border-color: var(--accent2); color: var(--text); }
+    .phase-tab.active { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 600; }
+    .phase-tab.done { background: #14532d; border-color: var(--success); color: var(--success); }
+
+    .phase-panel { display: none; }
+    .phase-panel.active { display: block; }
+
+    .complete-banner {
+      background: linear-gradient(135deg, #14532d, #166534);
+      border: 1px solid var(--success);
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      text-align: center;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .complete-banner.show { display: block; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="../actualites.html">Actualités</a></li>
+    <li><a href="../histoire.html">Histoire</a></li>
+    <li><a href="../bia/index.html">Fiches BIA</a></li>
+    <li><a href="dr400.html" class="active">Checklist DR400</a></li>
+    <li><a href="../notes/index.html">Mes notes</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="page-title">🛩️ Checklist Robin DR400</div>
+  <div class="page-subtitle">Checklist interactive — coche chaque item au fur et à mesure</div>
+
+  <!-- Bandeau cockpit stylisé -->
+  <div class="cockpit-strip">
+    <div class="gauge">
+      <div class="gauge-circle" id="g-rpm">0<br><span style="font-size:.6rem">RPM</span></div>
+      <div class="gauge-label">Moteur</div>
+    </div>
+    <div class="gauge">
+      <div class="gauge-circle" id="g-alt">—<br><span style="font-size:.6rem">ft</span></div>
+      <div class="gauge-label">Alti QNH</div>
+    </div>
+    <div class="gauge">
+      <div class="gauge-circle" id="g-fuel" style="color:var(--success)">FULL</div>
+      <div class="gauge-label">Carburant</div>
+    </div>
+    <div class="gauge">
+      <div class="gauge-circle" id="g-flaps" style="color:var(--accent2)">0°</div>
+      <div class="gauge-label">Volets</div>
+    </div>
+    <div style="flex:1; min-width:200px;">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">ROBIN DR400 · F-G···</div>
+      <div style="font-size:.8rem;color:var(--text);margin-bottom:.75rem" id="phase-display">Phase : <strong>Visite prévol</strong></div>
+      <div class="progress-text">
+        <span id="progress-label">0 / 0 items cochés</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Onglets phases -->
+  <div class="phase-tabs" id="phase-tabs"></div>
+
+  <!-- Contenu checklist -->
+  <div id="checklist-content"></div>
+
+  <button class="checklist-reset" onclick="resetAll()">↺ Réinitialiser toute la checklist</button>
+</div>
+
+<script>
+const CHECKLIST = [
+  {
+    phase: "Visite prévol",
+    icon: "🔍",
+    items: [
+      { action: "Documentation de bord", valeur: "À bord et valide" },
+      { action: "Masse et centrage", valeur: "Calculé et OK" },
+      { action: "Carburant", valeur: "Quantité vérifiée + purge" },
+      { action: "Huile moteur", valeur: "Niveau vérifié (min / max)" },
+      { action: "Bouchons / trappe", valeur: "Fermés et verrouillés" },
+      { action: "Tuyau Pitot", valeur: "Cache retiré, libre" },
+      { action: "Prise statique", valeur: "Dégagée" },
+      { action: "Gouvernes", valeur: "Déflections libres" },
+      { action: "Pneumatiques", valeur: "Gonflage et usure OK" },
+      { action: "Phares et feux", valeur: "Vérifiés" }
+    ]
+  },
+  {
+    phase: "Mise en route",
+    icon: "🔑",
+    items: [
+      { action: "Passagers", valeur: "Briefing effectué" },
+      { action: "Ceintures", valeur: "Attachées et serrées" },
+      { action: "Portes", valeur: "Fermées et verrouillées" },
+      { action: "Sièges", valeur: "Réglés et bloqués" },
+      { action: "Commandes de vol", valeur: "Libres et dans le bon sens" },
+      { action: "Mixte", valeur: "Plein riche" },
+      { action: "Pompe électrique", valeur: "ON" },
+      { action: "Starter (si froid)", valeur: "Tiré" },
+      { action: "Magnétos", valeur: "BOTH" },
+      { action: "Hélice", valeur: "Libre (CLEAR PROP !)" },
+      { action: "Démarrage moteur", valeur: "— " },
+      { action: "Huile (pression)", valeur: "Montée < 30 sec" },
+      { action: "Pompe électrique", valeur: "OFF après démarrage" },
+      { action: "Starter", valeur: "Rentré (si utilisé)" }
+    ]
+  },
+  {
+    phase: "Avant roulage",
+    icon: "🚦",
+    items: [
+      { action: "ATIS / météo terrain", valeur: "Écouté et noté" },
+      { action: "Calage altimétrique", valeur: "QNH réglé" },
+      { action: "Radio", valeur: "Fréquence sol / AFIS" },
+      { action: "Transpondeur", valeur: "ALT + code réglé" },
+      { action: "Frein de parc", valeur: "Serré" },
+      { action: "Tableau de bord", valeur: "Vérification générale" }
+    ]
+  },
+  {
+    phase: "Point fixe",
+    icon: "⚙️",
+    items: [
+      { action: "Face au vent si possible", valeur: "—" },
+      { action: "Freins", valeur: "Serrés" },
+      { action: "RPM point fixe", valeur: "1 800 tr/min" },
+      { action: "Magnéto gauche", valeur: "Chute ≤ 150 tr/min" },
+      { action: "Magnéto droite", valeur: "Chute ≤ 150 tr/min" },
+      { action: "Magnétos BOTH", valeur: "Retour régime normal" },
+      { action: "Réchauffage carburateur", valeur: "Légère chute de régime (normal)" },
+      { action: "Réchauffage OFF", valeur: "Régime revenu" },
+      { action: "Température moteur", valeur: "Dans le vert" },
+      { action: "Pression huile", valeur: "Dans le vert" },
+      { action: "Instruments de bord", valeur: "Zéros vérifiés" },
+      { action: "Volets décollage", valeur: "15° (ou selon manuel)" }
+    ]
+  },
+  {
+    phase: "Décollage",
+    icon: "🛫",
+    items: [
+      { action: "Alignement piste", valeur: "Cap compas vérifié" },
+      { action: "Mixte", valeur: "Plein riche" },
+      { action: "Pompe électrique", valeur: "ON" },
+      { action: "Réchauffage carbu", valeur: "OFF (décollage)" },
+      { action: "Autorisation décollage", valeur: "Obtenue" },
+      { action: "Puissance", valeur: "Plein gaz progressif" },
+      { action: "Vr (rotation)", valeur: "~80 km/h" },
+      { action: "Vitesse montée sécurité", valeur: "≥ 110 km/h" }
+    ]
+  },
+  {
+    phase: "Montée / croisière",
+    icon: "✈️",
+    items: [
+      { action: "Pompe électrique", valeur: "OFF (1 000 ft AGL)" },
+      { action: "Volets", valeur: "Rentrés progressivement" },
+      { action: "Mixte", valeur: "Ajuster selon altitude" },
+      { action: "Puissance croisière", valeur: "Selon manuel (75 % en général)" },
+      { action: "Transpondeur", valeur: "ALT confirmé" },
+      { action: "Navigation", valeur: "Cap / route vérifiés" },
+      { action: "Carburant", valeur: "Jauge vérifiée" }
+    ]
+  },
+  {
+    phase: "Atterrissage",
+    icon: "🛬",
+    items: [
+      { action: "ATIS / météo terrain", valeur: "Mise à jour" },
+      { action: "QNH", valeur: "Recalé" },
+      { action: "Radio", valeur: "Fréquence approche" },
+      { action: "Transpondeur", valeur: "ALT" },
+      { action: "Mixte", valeur: "Plein riche" },
+      { action: "Pompe électrique", valeur: "ON" },
+      { action: "Volets", valeur: "15° base, 30° finale" },
+      { action: "Vitesse approche", valeur: "130 km/h (volets 30°)" },
+      { action: "Vitesse seuil", valeur: "~110 km/h" }
+    ]
+  },
+  {
+    phase: "Arrêt moteur",
+    icon: "🔴",
+    items: [
+      { action: "Volets", valeur: "Rentrés" },
+      { action: "Radio", valeur: "Fréquence sol" },
+      { action: "Transpondeur", valeur: "STBY" },
+      { action: "Pompe électrique", valeur: "OFF" },
+      { action: "Avionique", valeur: "OFF" },
+      { action: "Réchauffage carbu", valeur: "OFF" },
+      { action: "Mixte", valeur: "Coupé (plein pauvre)" },
+      { action: "Magnétos", valeur: "OFF (après arrêt moteur)" },
+      { action: "Maître général", valeur: "OFF" },
+      { action: "Cales / attaches", valeur: "Mises en place" },
+      { action: "Cache Pitot", valeur: "Remis" }
+    ]
+  }
+];
+
+let state = {};
+
+function initState() {
+  CHECKLIST.forEach((phase, pi) => {
+    phase.items.forEach((_, ii) => {
+      state[`${pi}-${ii}`] = false;
+    });
+  });
+}
+
+function updateProgress() {
+  let total = 0, done = 0;
+  CHECKLIST.forEach((phase, pi) => {
+    let phaseDone = 0;
+    phase.items.forEach((_, ii) => {
+      total++;
+      if (state[`${pi}-${ii}`]) { done++; phaseDone++; }
+    });
+    const tab = document.querySelector(`.phase-tab[data-phase="${pi}"]`);
+    if (tab) {
+      tab.classList.toggle('done', phaseDone === phase.items.length);
+    }
+  });
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done} / ${total} items cochés`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+function renderPhase(pi) {
+  const phase = CHECKLIST[pi];
+  return `
+    <div class="phase-panel active" id="panel-${pi}">
+      <div style="margin-bottom:1rem">
+        <span class="phase-title">${phase.icon} ${phase.phase}</span>
+      </div>
+      <div class="checklist-phase">
+        ${phase.items.map((item, ii) => `
+          <label class="checklist-item ${state[`${pi}-${ii}`] ? 'checked' : ''}" id="item-${pi}-${ii}">
+            <input type="checkbox" ${state[`${pi}-${ii}`] ? 'checked' : ''}
+              onchange="toggleItem(${pi}, ${ii}, this.checked)">
+            <span class="item-action">${item.action}</span>
+            <span class="item-value">${item.valeur}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div class="complete-banner ${phase.items.every((_, ii) => state[`${pi}-${ii}`]) ? 'show' : ''}" id="done-${pi}">
+        ✅ Phase <strong>${phase.phase}</strong> terminée !
+      </div>
+    </div>
+  `;
+}
+
+let activePhase = 0;
+
+function buildUI() {
+  const tabs = document.getElementById('phase-tabs');
+  const content = document.getElementById('checklist-content');
+
+  tabs.innerHTML = CHECKLIST.map((p, i) => `
+    <button class="phase-tab ${i === activePhase ? 'active' : ''}" data-phase="${i}"
+      onclick="switchPhase(${i})">${p.icon} ${p.phase}</button>
+  `).join('');
+
+  content.innerHTML = renderPhase(activePhase);
+  updateProgress();
+  document.getElementById('phase-display').innerHTML = `Phase : <strong>${CHECKLIST[activePhase].phase}</strong>`;
+}
+
+function switchPhase(pi) {
+  activePhase = pi;
+  document.querySelectorAll('.phase-tab').forEach((t, i) => t.classList.toggle('active', i === pi));
+  document.getElementById('checklist-content').innerHTML = renderPhase(pi);
+  document.getElementById('phase-display').innerHTML = `Phase : <strong>${CHECKLIST[pi].phase}</strong>`;
+  updateProgress();
+}
+
+function toggleItem(pi, ii, checked) {
+  state[`${pi}-${ii}`] = checked;
+  const el = document.getElementById(`item-${pi}-${ii}`);
+  el.classList.toggle('checked', checked);
+  const phaseDone = CHECKLIST[pi].items.every((_, i) => state[`${pi}-${i}`]);
+  const banner = document.getElementById(`done-${pi}`);
+  if (banner) banner.classList.toggle('show', phaseDone);
+  updateProgress();
+}
+
+function resetAll() {
+  if (!confirm('Réinitialiser toute la checklist ?')) return;
+  initState();
+  buildUI();
+}
+
+initState();
+buildUI();
+</script>
+
+</body>
+</html>
