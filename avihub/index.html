@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AviHub — Portail BIA & Aviation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Accueil</a></li>
+    <li><a href="actualites.html">Actualités</a></li>
+    <li><a href="histoire.html">Histoire</a></li>
+    <li><a href="bia/index.html">Fiches BIA</a></li>
+    <li><a href="checklist/dr400.html">Checklist DR400</a></li>
+    <li><a href="notes/index.html">Mes notes</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <h1>✈ AviHub</h1>
+    <p>Ton portail personnel pour le BIA, l'actualité aéronautique et l'entraînement vol</p>
+
+    <div class="hub-cards">
+      <a class="hub-card" href="actualites.html">
+        <span class="icon">📰</span>
+        <span class="label">Actualités</span>
+        <span class="desc">Flux RSS des dernières news aéronautiques</span>
+      </a>
+      <a class="hub-card" href="histoire.html">
+        <span class="icon">🕰️</span>
+        <span class="label">En ce jour</span>
+        <span class="desc">Flashbacks historiques aviation du jour</span>
+      </a>
+      <a class="hub-card" href="bia/index.html">
+        <span class="icon">📚</span>
+        <span class="label">Fiches BIA</span>
+        <span class="desc">Révisions par matière : météo, nav, méca…</span>
+      </a>
+      <a class="hub-card" href="checklist/dr400.html">
+        <span class="icon">🛩️</span>
+        <span class="label">Checklist DR400</span>
+        <span class="desc">Simulateur de tableau de bord interactif</span>
+      </a>
+      <a class="hub-card" href="notes/index.html">
+        <span class="icon">📝</span>
+        <span class="label">Mes notes</span>
+        <span class="desc">Notes de cours GoodNotes en PDF</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Widgets rapides -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
+
+    <!-- Dernière actu -->
+    <div class="card" id="widget-actu">
+      <div class="card-source">📰 Dernière actualité</div>
+      <div class="loading" style="padding:1rem 0;">
+        <div class="spinner"></div>Chargement…
+      </div>
+    </div>
+
+    <!-- En ce jour -->
+    <div class="card" id="widget-histoire">
+      <div class="card-source">🕰️ En ce jour dans l'aviation</div>
+      <div class="loading" style="padding:1rem 0;">
+        <div class="spinner"></div>Chargement…
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Widget Actualités (première news Aerobuzz) ──
+async function loadActuWidget() {
+  const el = document.getElementById('widget-actu');
+  try {
+    const url = 'https://api.rss2json.com/v1/api.json?rss_url=https://www.aerobuzz.fr/feed/&count=1';
+    const r = await fetch(url);
+    const d = await r.json();
+    const item = d.items[0];
+    const date = new Date(item.pubDate).toLocaleDateString('fr-FR', {day:'numeric',month:'long'});
+    el.innerHTML = `
+      <div class="card-source">📰 Aerobuzz.fr</div>
+      <div class="card-title"><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a></div>
+      <div class="card-desc">${item.description.replace(/<[^>]+>/g,'').slice(0,150)}…</div>
+      <div class="card-date">${date} · <a href="actualites.html" style="color:var(--accent2)">Toutes les actus →</a></div>
+    `;
+  } catch {
+    el.innerHTML = `<div class="card-source">📰 Actualités</div><div class="card-desc"><a href="actualites.html">Voir les actualités →</a></div>`;
+  }
+}
+
+// ── Widget Histoire ──
+async function loadHistoireWidget() {
+  const el = document.getElementById('widget-histoire');
+  try {
+    const r = await fetch('data/histoire.json');
+    const data = await r.json();
+    const now = new Date();
+    const key = `${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const events = data[key] || [];
+    if (events.length === 0) {
+      el.innerHTML = `<div class="card-source">🕰️ En ce jour</div><div class="card-desc" style="padding-top:.5rem">Aucun événement enregistré pour aujourd'hui.<br><a href="histoire.html" style="color:var(--accent2)">Voir tous les événements →</a></div>`;
+      return;
+    }
+    const ev = events[0];
+    el.innerHTML = `
+      <div class="card-source">🕰️ En ce jour — ${now.getDate()} ${now.toLocaleDateString('fr-FR',{month:'long'})}</div>
+      <div style="margin-top:.5rem">
+        <div class="timeline-year">${ev.annee}</div>
+        <div class="card-title">${ev.titre}</div>
+        <div class="card-desc">${ev.description}</div>
+      </div>
+      <div class="card-date" style="margin-top:.75rem"><a href="histoire.html" style="color:var(--accent2)">Voir tous les événements du jour →</a></div>
+    `;
+  } catch {
+    el.innerHTML = `<div class="card-source">🕰️ En ce jour</div><div class="card-desc"><a href="histoire.html">Voir l'histoire →</a></div>`;
+  }
+}
+
+loadActuWidget();
+loadHistoireWidget();
+</script>
+
+</body>
+</html>
