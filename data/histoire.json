@@ -1,0 +1,87 @@
+{
+  "01-01": [
+    { "annee": "1914", "titre": "Premier vol commercial régulier", "description": "La St. Petersburg–Tampa Airboat Line inaugure le premier service aérien commercial régulier au monde, en Floride (USA)." }
+  ],
+  "01-07": [
+    { "annee": "1785", "titre": "Première traversée de la Manche en ballon", "description": "Jean-Pierre Blanchard et John Jeffries traversent la Manche en ballon, de Douvres à Calais, en 2h30." }
+  ],
+  "01-13": [
+    { "annee": "1908", "titre": "Premier vol en cercle d'un kilomètre — Henri Farman", "description": "Henri Farman réalise le premier vol en circuit fermé d'un kilomètre devant témoins officiels, sur un biplan Voisin, à Issy-les-Moulineaux." }
+  ],
+  "02-04": [
+    { "annee": "1936", "titre": "Premier vol du Douglas DC-3", "description": "Le Douglas DC-3 effectue son vol inaugural. Cet avion révolutionnaire deviendra le bimoteur commercial le plus produit de l'histoire." }
+  ],
+  "03-02": [
+    { "annee": "1969", "titre": "Premier vol du Concorde", "description": "Le prototype 001 du Concorde s'envole pour la première fois depuis Toulouse-Blagnac, piloté par André Turcat. Durée : 27 minutes." }
+  ],
+  "03-21": [
+    { "annee": "1999", "titre": "Bertrand Piccard — tour du monde en ballon", "description": "Bertrand Piccard et Brian Jones bouclent le premier tour du monde sans escale en ballon à bord du Breitling Orbiter 3." }
+  ],
+  "04-12": [
+    { "annee": "1961", "titre": "Premier vol spatial humain — Youri Gagarine", "description": "Youri Gagarine effectue le premier vol spatial humain à bord de Vostok 1, bouclant une orbite autour de la Terre en 108 minutes." }
+  ],
+  "05-08": [
+    { "annee": "1902", "titre": "Naissance de la météorologie aéronautique", "description": "Le Service météorologique central français publie les premières prévisions météo spécialement destinées aux aérostiers." }
+  ],
+  "05-20": [
+    { "annee": "1927", "titre": "Charles Lindbergh — traversée de l'Atlantique", "description": "Charles Lindbergh décolle de New York à bord du Spirit of St. Louis pour la première traversée en solitaire et sans escale de l'Atlantique Nord. Il atterrira à Paris 33h30 plus tard." }
+  ],
+  "05-21": [
+    { "annee": "1927", "titre": "Lindbergh atterrit au Bourget", "description": "À 22h22, Charles Lindbergh pose le Spirit of St. Louis au Bourget, accueilli par une foule de 150 000 personnes. La traversée New York–Paris est accomplie en 33h30." }
+  ],
+  "06-05": [
+    { "annee": "1783", "titre": "Premier vol public du ballon des frères Montgolfier", "description": "Joseph et Étienne Montgolfier font voler publiquement leur ballon à air chaud à Annonay (Ardèche), devant l'assemblée des États du Vivarais. L'engin s'élève à environ 2 000 mètres." }
+  ],
+  "06-17": [
+    { "annee": "1928", "titre": "Amelia Earhart — première femme à traverser l'Atlantique", "description": "Amelia Earhart traverse l'Atlantique en avion (en tant que passagère) à bord du Friendship, de Terre-Neuve à Galles. Elle sera la première femme à le faire en solo en 1932." }
+  ],
+  "06-21": [
+    { "annee": "2004", "titre": "Premier vol spatial privé — SpaceShipOne", "description": "SpaceShipOne, développé par Scaled Composites, effectue le premier vol spatial suborbital privé, franchissant la limite de 100 km (ligne de Kármán)." }
+  ],
+  "06-24": [
+    { "annee": "1909", "titre": "Hubert Latham — premier vol au-dessus de la mer", "description": "Hubert Latham tente de traverser la Manche en Antoinette IV, mais tombe en panne de moteur et amerrit en mer du Nord. Il sera devancé par Blériot le 25 juillet." },
+    { "annee": "1982", "titre": "Vol British Airways 9 — les 4 moteurs s'éteignent", "description": "Un Boeing 747 traverse un nuage de cendres volcaniques au-dessus de l'océan Indien. Les 4 moteurs s'arrêtent successivement. L'équipage réussit à les redémarrer et à atterrir à Jakarta sans victimes." }
+  ],
+  "07-01": [
+    { "annee": "1916", "titre": "Naissance du RFC — Royal Flying Corps", "description": "Lors de la bataille de la Somme, le Royal Flying Corps (ancêtre de la RAF) effectue ses premières missions d'observation et d'appui au sol massives." }
+  ],
+  "07-02": [
+    { "annee": "1900", "titre": "Premier vol du Zeppelin LZ1", "description": "Le comte Ferdinand von Zeppelin fait voler son premier dirigeable rigide, le LZ1, au-dessus du lac de Constance. L'ère des grands dirigeables commence." }
+  ],
+  "07-25": [
+    { "annee": "1909", "titre": "Louis Blériot traverse la Manche", "description": "Louis Blériot traverse la Manche pour la première fois en avion, de Calais à Douvres, en 36 minutes 30 secondes à bord de son monoplan Blériot XI. Il remporte le prix de 1 000 livres du Daily Mail." }
+  ],
+  "08-11": [
+    { "annee": "1999", "titre": "Premier tour du monde en solitaire et sans escale", "description": "Steve Fossett boucle le premier tour du monde en solitaire, sans escale et sans ravitaillement, en montgolfière (Spirit of Freedom) en 2002 — mais sa tentative de 1998 ici lui coûtera presque la vie." }
+  ],
+  "08-19": [
+    { "annee": "1784", "titre": "Élisabeth Thible — première femme en ballon", "description": "Élisabeth Thible devient la première femme à voler en ballon libre, à bord d'un Montgolfière à Lyon, devant le roi de Suède." }
+  ],
+  "09-09": [
+    { "annee": "1890", "titre": "Clément Ader — Avion III", "description": "Clément Ader effectue un vol de 300 mètres à bord de son Avion III à vapeur, devant des officiers militaires à Satory. La France revendique ce vol comme précurseur du brevet des frères Wright." }
+  ],
+  "09-18": [
+    { "annee": "1961", "titre": "Mort de Dag Hammarskjöld dans un crash", "description": "Le Secrétaire général de l'ONU Dag Hammarskjöld meurt dans le crash de son Douglas DC-6 près de Ndola (Zambie). Les circonstances restent controversées." }
+  ],
+  "10-14": [
+    { "annee": "1947", "titre": "Chuck Yeager franchit le mur du son", "description": "Charles 'Chuck' Yeager devient le premier humain à franchir le mur du son en vol horizontal à bord du Bell X-1 'Glamorous Glennis', à Mach 1,06 (1 127 km/h) à 12 800 m d'altitude." }
+  ],
+  "10-22": [
+    { "annee": "1797", "titre": "Premier saut en parachute", "description": "André-Jacques Garnerin réalise le premier saut en parachute de l'histoire depuis un ballon à 1 000 mètres au-dessus du Parc Monceau à Paris." }
+  ],
+  "11-13": [
+    { "annee": "1907", "titre": "Premier vol d'hélicoptère — Paul Cornu", "description": "Paul Cornu réalise le premier vol libre d'un hélicoptère à Lisieux (France). Son engin à double rotor s'élève à 30 cm du sol pendant 20 secondes avec lui à bord." }
+  ],
+  "11-21": [
+    { "annee": "1783", "titre": "Premier vol humain en ballon libre", "description": "Pilâtre de Rozier et le marquis d'Arlandes effectuent le premier vol humain en ballon libre (Montgolfière) sur 9 km à Paris, au-dessus du Bois de Boulogne, pendant 25 minutes." }
+  ],
+  "12-01": [
+    { "annee": "1783", "titre": "Premier vol en ballon à hydrogène", "description": "Jacques Charles et Nicolas Robert s'envolent en ballon à hydrogène depuis les Tuileries à Paris devant 400 000 spectateurs, parcourant 43 km jusqu'à Nesles-la-Vallée." }
+  ],
+  "12-17": [
+    { "annee": "1903", "titre": "Premiers vols motorisés des frères Wright", "description": "Orville et Wilbur Wright réalisent les quatre premiers vols motorisés et contrôlés de l'histoire à Kitty Hawk (Caroline du Nord). Le premier dure 12 secondes, le dernier 59 secondes sur 260 mètres." }
+  ],
+  "12-21": [
+    { "annee": "1968", "titre": "Lancement d'Apollo 8", "description": "Apollo 8 décolle pour la Lune avec Frank Borman, James Lovell et William Anders. Ce sera le premier équipage humain à quitter l'orbite terrestre et à orbiter autour de la Lune." }
+  ]
+}
