@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSY2 Cadets — AviHub</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    :root{--bg:#f8fafc;--bg2:#fff;--bg3:#f1f5f9;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;}
+    body{background:#f8fafc;}
+    nav{background:#fff;border-bottom:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+    .nav-logo{color:#f59e0b!important;}
+    .nav-links a{color:#64748b;}
+    .nav-links a:hover,.nav-links a.active{color:#0f172a;background:#f1f5f9;}
+
+    .week-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .week-tab{background:#fff;border:1px solid #e2e8f0;color:#64748b;padding:.32rem .85rem;border-radius:999px;font-size:.78rem;cursor:pointer;transition:all .12s;font-weight:500;}
+    .week-tab.active{background:#0f172a;color:#fff;border-color:#0f172a;font-weight:600;}
+
+    .week-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.75rem;}
+    .day-col{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:.85rem .9rem;min-height:70px;transition:border-color .12s,background .12s;}
+    .day-col.drag-over{border-color:#f59e0b;background:#fffbeb;}
+    .day-col.today-col{border-color:#f59e0b;box-shadow:0 0 0 3px #fef3c7;}
+    .day-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between;}
+    .day-col.today-col .day-label{color:#b45309;}
+    .day-sub{font-size:.68rem;font-weight:400;color:#cbd5e1;}
+
+    .task-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid;border-radius:7px;padding:.55rem .7rem;margin-bottom:.38rem;cursor:grab;transition:box-shadow .12s;position:relative;user-select:none;}
+    .task-card:active{cursor:grabbing;}
+    .task-card.dragging{opacity:.35;}
+    .task-card.done{opacity:.5;}
+    .task-card.done::after{content:'✅';position:absolute;right:.55rem;top:.45rem;font-size:.7rem;}
+    .task-title{font-size:.8rem;font-weight:500;color:#0f172a;line-height:1.35;padding-right:1.1rem;margin-bottom:.3rem;}
+    .task-meta{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+    .cat-badge{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.14rem .45rem;border-radius:999px;display:inline-block;}
+    .task-dur{font-size:.68rem;color:#94a3b8;}
+    .task-actions{margin-top:.42rem;display:flex;gap:.3rem;flex-wrap:wrap;}
+    .tbtn{font-size:.7rem;padding:.2rem .5rem;border-radius:5px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;}
+    .tbtn-train{background:#f59e0b;border-color:#f59e0b;color:#000;}
+    .tbtn-train:hover{background:#d97706;}
+    .tbtn-move{background:#fff;border-color:#e2e8f0;color:#64748b;}
+    .tbtn-move:hover{border-color:#94a3b8;color:#0f172a;}
+    .tbtn-del{background:#fff;border-color:#fecaca;color:#ef4444;}
+    .tbtn-del:hover{background:#fef2f2;}
+
+    .today-banner{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:1.35rem 1.75rem;color:#fff;margin-bottom:1.75rem;}
+    .today-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:.4rem;}
+    .today-title{font-size:1rem;font-weight:700;margin-bottom:.65rem;}
+    .today-task{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.55rem .9rem;display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem;cursor:pointer;transition:background .12s;}
+    .today-task:hover{background:rgba(255,255,255,.15);}
+    .today-task-title{font-size:.83rem;font-weight:500;flex:1;}
+    .today-task-dur{font-size:.7rem;color:#94a3b8;white-space:nowrap;}
+    .today-task-btn{font-size:.7rem;background:#f59e0b;color:#000;border:none;padding:.2rem .6rem;border-radius:5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+    .progress-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;}
+    .progress-bar{flex:1;background:#e2e8f0;border-radius:999px;height:7px;}
+    .progress-fill{background:#f59e0b;border-radius:999px;height:7px;transition:width .4s;}
+    .progress-label{font-size:.75rem;color:#64748b;font-weight:600;white-space:nowrap;}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+    .modal-box{background:#fff;border-radius:16px;padding:1.75rem 2rem;max-width:680px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);margin:auto;}
+    .modal-close{float:right;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#94a3b8;margin-top:-.3rem;}
+    .modal-close:hover{color:#0f172a;}
+    .modal-title{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:.15rem;}
+    .modal-sub{font-size:.8rem;color:#64748b;margin-bottom:1.1rem;}
+
+    .field-label{font-size:.75rem;font-weight:600;color:#475569;display:block;margin-bottom:.3rem;margin-top:.85rem;}
+    textarea.fi{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.65rem .85rem;font-size:.83rem;color:#0f172a;line-height:1.6;resize:vertical;min-height:105px;font-family:inherit;box-sizing:border-box;}
+    textarea.fi:focus{outline:none;border-color:#f59e0b;}
+    input.fi{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .85rem;font-size:.83rem;color:#0f172a;font-family:inherit;box-sizing:border-box;}
+    input.fi:focus{outline:none;border-color:#f59e0b;}
+    select.fi{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.38rem .6rem;font-size:.78rem;color:#0f172a;cursor:pointer;}
+
+    .q-chip{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:.35rem .65rem;font-size:.75rem;cursor:pointer;transition:all .12s;display:inline-block;margin:.18rem;}
+    .q-chip:hover{border-color:#f59e0b;background:#fffbeb;color:#b45309;}
+
+    .ai-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.9rem 1.1rem;margin-top:.85rem;font-size:.83rem;line-height:1.75;color:#0f172a;min-height:50px;white-space:pre-wrap;}
+    .ai-pulse{animation:pulse 1.2s infinite;}
+    @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+    .btn-p{background:#f59e0b;border:none;color:#000;padding:.52rem 1.3rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .15s;}
+    .btn-p:hover{background:#d97706;}
+    .btn-p:disabled{opacity:.4;cursor:not-allowed;}
+    .btn-s{background:#fff;border:1px solid #e2e8f0;color:#64748b;padding:.52rem 1rem;border-radius:8px;font-weight:500;cursor:pointer;font-size:.83rem;}
+    .btn-s:hover{border-color:#94a3b8;color:#0f172a;}
+    .btn-g{background:#14532d;border:none;color:#22c55e;padding:.52rem 1.3rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.85rem;}
+    .btn-g:hover{background:#166534;}
+
+    .fiche-item{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.8rem 1rem;cursor:pointer;transition:all .12s;margin-bottom:.45rem;display:flex;align-items:center;gap:.75rem;}
+    .fiche-item:hover{border-color:#f59e0b;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .fiche-title{font-size:.85rem;font-weight:600;color:#0f172a;flex:1;}
+    .fiche-date{font-size:.68rem;color:#94a3b8;white-space:nowrap;}
+
+    .settings-fab{position:fixed;bottom:1.5rem;right:1.5rem;background:#0f172a;color:#fff;border:none;width:42px;height:42px;border-radius:50%;font-size:1rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:200;transition:transform .15s;}
+    .settings-fab:hover{transform:rotate(45deg);}
+
+    .video-link{display:inline-flex;align-items:center;gap:.4rem;color:#dc2626;font-size:.78rem;text-decoration:none;font-weight:600;background:#fef2f2;border:1px solid #fecaca;padding:.28rem .65rem;border-radius:6px;margin-bottom:.6rem;}
+    .video-link:hover{background:#fee2e2;}
+
+    .add-row{display:flex;gap:.4rem;margin-top:.55rem;}
+    .add-inp{flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.35rem .6rem;font-size:.76rem;color:#0f172a;font-family:inherit;}
+    .add-inp:focus{outline:none;border-color:#f59e0b;}
+    .add-btn{background:#e2e8f0;border:none;color:#475569;padding:.35rem .65rem;border-radius:6px;font-weight:700;cursor:pointer;font-size:.76rem;}
+    .add-btn:hover{background:#cbd5e1;}
+
+    .day-no-date{text-align:center;padding:2rem 1rem;color:#64748b;font-size:.88rem;}
+    hr.sep{border:none;border-top:1px solid #e2e8f0;margin:2rem 0;}
+    .sec-hd{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:.85rem;}
+    .move-day-btn{width:100%;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.55rem .85rem;text-align:left;cursor:pointer;font-size:.82rem;font-weight:500;color:#0f172a;margin-bottom:.3rem;transition:all .12s;}
+    .move-day-btn:hover{border-color:#f59e0b;background:#fffbeb;}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="../actualites.html">Actualités</a></li>
+    <li><a href="../histoire.html">Histoire</a></li>
+    <li><a href="../bia/index.html">Connaissances</a></li>
+    <li><a href="../checklist/index.html">Checklist</a></li>
+    <li><a href="../aeroports/index.html">Aéroports</a></li>
+    <li><a href="../notes/index.html">Notes</a></li>
+    <li><a href="index.html" class="active">PSY2</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div id="today-section"></div>
+
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="prog-label">0 / 0 tâches</div>
+  </div>
+
+  <div class="week-tabs" id="week-tabs"></div>
+  <div id="week-content"></div>
+
+  <hr class="sep">
+  <div class="sec-hd">📁 Mes fiches complétées (<span id="fiche-count">0</span>)</div>
+  <div id="fiche-list"></div>
+</div>
+
+<button class="settings-fab" onclick="openSettings()" title="Paramètres">⚙️</button>
+
+<!-- Training Modal -->
+<div class="modal-overlay" id="modal-train" style="display:none" onclick="e=>e.target===this&&closeModal('modal-train')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-train')">✕</button>
+    <div class="modal-title" id="mt-title"></div>
+    <div class="modal-sub" id="mt-sub"></div>
+    <div id="mt-body"></div>
+    <div style="margin-top:1.1rem;display:flex;gap:.55rem;flex-wrap:wrap;" id="mt-actions"></div>
+  </div>
+</div>
+
+<!-- Move Modal -->
+<div class="modal-overlay" id="modal-move" style="display:none">
+  <div class="modal-box" style="max-width:380px">
+    <button class="modal-close" onclick="closeModal('modal-move')">✕</button>
+    <div class="modal-title">Déplacer la tâche</div>
+    <div class="modal-sub">Choisir le jour de destination</div>
+    <div id="move-list"></div>
+  </div>
+</div>
+
+<!-- Fiche Detail Modal -->
+<div class="modal-overlay" id="modal-fiche" style="display:none">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-fiche')">✕</button>
+    <div id="fiche-detail"></div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modal-settings" style="display:none">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('modal-settings')">✕</button>
+    <div class="modal-title">⚙️ Paramètres PSY2</div>
+    <label class="field-label">Clé API Claude (Anthropic) — coaching IA</label>
+    <input class="fi" type="password" id="api-key-in" placeholder="sk-ant-api03-...">
+    <div style="font-size:.7rem;color:#94a3b8;margin-top:.3rem">Stockée uniquement dans ton navigateur. Modèle utilisé : claude-haiku-4-5 (rapide).</div>
+    <label class="field-label" style="margin-top:1.1rem">Date de départ du programme (= Semaine 1, Jour 1)</label>
+    <input class="fi" type="date" id="start-date-in">
+    <div style="margin-top:1.1rem;display:flex;gap:.55rem;">
+      <button class="btn-p" onclick="saveSettings()">Enregistrer</button>
+      <button class="btn-s" onclick="if(confirm('Réinitialiser le programme au défaut ?')){localStorage.removeItem('psy2_prog');prog=JSON.parse(JSON.stringify(PROG_DEFAULT));saveProg();renderAll();}">Réinitialiser le programme</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Categories ─────────────────────────────────────────────────────────────
+const CATS={
+  perso:{label:'Perso',color:'#7F77DD'},
+  metier:{label:'Métier',color:'#1D9E75'},
+  candidature:{label:'Candidature',color:'#D85A30'},
+  entretien:{label:'Entretien',color:'#D4537E'},
+  video:{label:'Vidéo',color:'#EF9F27'},
+};
+
+// ── Questions per task title ────────────────────────────────────────────────
+const QMAP={
+  'Questions entretien bloc réflexion perso/motivation/projet/entreprise':[
+    "Pourquoi Air France ?","Pourquoi ce métier ?","Pourquoi les cadets (et pas l'ENAC ou l'armée) ?",
+    "Quelle est ton histoire avec l'aéro ?","Quel est le prix que tu es prête à payer pour devenir pilote ?",
+    "Vouloir voler, mais dans quel but ? Transport passagers ? Fret ? Brousse ?",
+    "Si on t'embauche en Pologne, tu y vas ?","Comment voyez-vous votre évolution au sein d'AF ?",
+    "Décrivez votre projet professionnel.","Que faites-vous si on ne vous prend pas ?",
+    "Que pouvez-vous apporter à Air France ?","Qu'attendez-vous d'un emploi dans notre société ?",
+  ],
+  'Question bloc métier 1':[
+    "Quel est l'aspect que vous préférez dans ce métier ?","Quel est l'aspect qui vous plaît le moins ?",
+    "Trouvez-vous que ce métier soit répétitif ?","Qu'est-ce qui pourrait vous faire renoncer à ce métier ?",
+    "Ce métier a beaucoup évolué — comment le voyez-vous dans 20 ans ?",
+    "Quelles sont les qualités que doit avoir un pilote ? Un CdB ?","Qu'est-ce qu'un bon pilote pour vous ?",
+    "Quels sont les défauts que ne doit pas avoir un pilote ? Un CdB ?","Quelle est la clé du travail en équipage ?",
+  ],
+  'Question bloc métier 2':[
+    "Donnez-nous la définition de sécurité des vols.","Quel est le rôle d'un CdB d'après vous ?",
+    "Comment aider son CdB ?","Quel est votre avion préféré et pourquoi ?","Préférez-vous le LC, le MC et pourquoi ?",
+    "Que se passe-t-il si vous ne partagez pas la décision du CdB ?",
+    "Pourquoi pilote de ligne chez Air France ?","Pourquoi pas l'armée ? Avez-vous un pb avec l'autorité ?",
+    "Que vous apporterait le métier de pilote de ligne ?",
+  ],
+  'Question bloc formation':[
+    "Savez-vous comment se déroule la formation ?","À quel poste vous permet d'accéder la formation ?",
+    "Que savez-vous de la formation ENAC-SEFA ?","Que signifie SEFA ?",
+    "Comment avez-vous entendu parler de la formation cadet ?","Que vous apporterait la formation ENAC ?",
+    "Que faites-vous si vous échouez une des parties de la formation ?",
+  ],
+  'Question bloc perso 1':[
+    "Présentez-vous.","Quels sont vos loisirs / activités extrascolaires ?",
+    "Quelles sont les qualités que doit avoir un pilote ? Pensez-vous les avoir ?",
+    "Quels sont vos défauts ?","Comment les autres vous perçoivent-ils ?",
+    "Avez-vous déjà eu des responsabilités au sein d'un groupe ?",
+    "Avez-vous déjà subi un « coup dur » et comment avez-vous réagi ?","Que feriez-vous en cas d'échec à ce recrutement ?",
+  ],
+  'Question bloc perso 2':[
+    "Pourquoi vous plutôt qu'un autre ?","Pourquoi pensez-vous pouvoir réussir la sélection et la formation ?",
+    "Qu'apporteriez-vous à l'ENAC / AF ?","Quels ont été vos principaux échecs ?",
+    "Quelles ont été vos principales réussites ?","Quelles ont été vos principales erreurs ? Que vous ont-elles apporté ?",
+    "Aimez-vous le risque ?","Êtes-vous stressé(e) ? Comment réagissez-vous face à l'urgence ?",
+    "Avez-vous déjà eu à prendre des décisions pour un groupe ?",
+  ],
+  'Question bloc perso 3':[
+    "Savez-vous être autoritaire ?","De quoi êtes-vous le plus fier(ère) ?","Faites-vous preuve d'initiative ?",
+    "Aimez-vous travailler en équipe ? Comment vous sentez-vous dans une équipe ?",
+    "Aimez-vous déléguer vos responsabilités ?","Votre entourage vous soutient-il ?",
+    "Pourquoi tu es là ? Comment es-tu arrivée là ?","Que pensez-vous de vous ?","Avez-vous peur des conflits ?",
+  ],
+};
+const QSIM_PERSO=["Présentez-vous.","Pourquoi vous plutôt qu'un autre ?","Quels sont vos principaux défauts ?","De quoi êtes-vous le plus fier(ère) ?","Comment réagissez-vous face au stress ?","Avez-vous subi un coup dur ? Comment avez-vous rebondi ?","Que feriez-vous en cas d'échec ?","Pourquoi le choix de se réorienter maintenant ?"];
+const QSIM_METIER=["Qu'est-ce qu'un bon pilote pour vous ?","Quel est le rôle d'un CdB ?","Comment aider son CdB ?","Que se passe-t-il si vous ne partagez pas la décision du CdB ?","Quelle est la clé du travail en équipage ?","Définissez la sécurité des vols.","Pourquoi pilote de ligne chez Air France ?"];
+const QSIM_FORM=["Savez-vous comment se déroule la formation ?","Que signifie SEFA ?","À quel poste vous permet d'accéder la formation ?","Que vous apporterait la formation ENAC ?"];
+const QPIEGE=["Pourquoi le choix de se réorienter maintenant ?","Accepteriez-vous d'être dirigé par quelqu'un de plus jeune que vous ?","Pensez-vous avoir tout fait pour y arriver lors de vos tentatives précédentes ?","Votre réputation — y accordez-vous de l'importance ?","Si vous deviez ne pas prendre une personne du groupe, qui serait-ce et pourquoi ?","Qui selon vous sera pris dans votre groupe ?","Que regrettez-vous ? Qu'auriez-vous pu mieux faire ?"];
+
+// ── Default programme (5 semaines) ─────────────────────────────────────────
+const PROG_DEFAULT={semaines:[
+  {id:'S1',label:'S1 — Fondations',jours:[
+    {id:'S1D0',label:'Jour 1',sub:'30min',tasks:[{id:'t001',titre:'Télécharger livres oraux',duree:'30min',cat:'entretien'}]},
+    {id:'S1D1',label:'Jour 2',sub:'1h',tasks:[{id:'t002',titre:'Recherche + vidéo autocritique',duree:'1h',cat:'perso'}]},
+    {id:'S1D2',label:'Jour 3',sub:'30min',tasks:[{id:'t003',titre:'Reprendre notes Freddy',duree:'30min',cat:'metier'}]},
+    {id:'S1D3',label:'Jour 4',sub:'1h-1h30',tasks:[{id:'t004',titre:'Questions entretien bloc réflexion perso/motivation/projet/entreprise',duree:'1h',cat:'entretien'}]},
+    {id:'S1D4',label:'Jour 5',sub:'30min',tasks:[{id:'t005',titre:'Reprendre notes Matthieu',duree:'30min',cat:'metier'}]},
+    {id:'S1WE',label:'Weekend',sub:'4h-5h',tasks:[
+      {id:'t006',titre:'Expériences pro → qualités pilote',duree:'1h',cat:'candidature'},
+      {id:'t007',titre:'Expériences académiques → qualités pilote',duree:'1h',cat:'candidature'},
+      {id:'t008',titre:'Vidéo : Les grands secrets du comportement humain',duree:'~50min',cat:'video',lien:'https://www.youtube.com/watch?v=tP3vrV8sjUA'},
+      {id:'t009',titre:'Faire test MBTI (VIA Character + fichedepersonnalite)',duree:'45min',cat:'perso'},
+      {id:'t010',titre:'AF : compagnie & opérations (session 1)',duree:'1h',cat:'metier'},
+    ]},
+  ]},
+  {id:'S2',label:'S2 — Expression & candidature',jours:[
+    {id:'S2D0',label:'Jour 1',sub:'1h',tasks:[{id:'t011',titre:'Recherche + vidéos construction critique pertinente',duree:'1h',cat:'perso'}]},
+    {id:'S2D1',label:'Jour 2',sub:'1h',tasks:[{id:'t012',titre:'Expériences loisirs → qualités pilote',duree:'1h',cat:'candidature'}]},
+    {id:'S2D2',label:'Jour 3',sub:'1h',tasks:[{id:'t013',titre:'AF : compagnie & opérations (session 2)',duree:'1h',cat:'metier'}]},
+    {id:'S2D3',label:'Jour 4',sub:'~50min',tasks:[{id:'t014',titre:"Vidéo : Comment s'exprimer mieux que 99% des gens",duree:'~50min',cat:'video',lien:'https://www.youtube.com/watch?v=8zqpWu8FuDU'}]},
+    {id:'S2D4',label:'Jour 5',sub:'45min',tasks:[{id:'t015',titre:'Interprétation test MBTI',duree:'45min',cat:'perso'}]},
+    {id:'S2WE',label:'Weekend',sub:'4h-5h',tasks:[
+      {id:'t016',titre:'Traduction CV anglais',duree:'1h30',cat:'candidature'},
+      {id:'t017',titre:'Reprendre résultats tests personnalité',duree:'1h',cat:'perso'},
+      {id:'t018',titre:'Vidéo : Comment devenir pilote de ligne',duree:'~50min',cat:'video',lien:'https://www.youtube.com/watch?v=3mFs7P4p9YQ'},
+      {id:'t019',titre:'Formation cadets : déroulé complet',duree:'45min',cat:'metier'},
+      {id:'t020',titre:'Traduction LM anglais',duree:'1h30',cat:'candidature'},
+    ]},
+  ]},
+  {id:'S3',label:'S3 — Métier & questions',jours:[
+    {id:'S3D0',label:'Jour 1',sub:'~45min',tasks:[{id:'t021',titre:'Vidéo : Comment bien parler transforme votre cerveau',duree:'~45min',cat:'video',lien:'https://www.youtube.com/watch?v=VELMLoCtAN4'}]},
+    {id:'S3D1',label:'Jour 2',sub:'1h30',tasks:[{id:'t022',titre:'Question bloc métier 1',duree:'1h30',cat:'entretien'}]},
+    {id:'S3D2',label:'Jour 3',sub:'~50min',tasks:[{id:'t023',titre:"Vidéo : Comment trouver sa voie quand on s'intéresse à tout",duree:'~50min',cat:'video',lien:'https://www.youtube.com/watch?v=Fxu8vsMi7Ws'}]},
+    {id:'S3D3',label:'Jour 4',sub:'1h30',tasks:[{id:'t024',titre:'Contacter écosystème métier (PNC, CC, TZA...)',duree:'1h30',cat:'metier'}]},
+    {id:'S3D4',label:'Jour 5',sub:'1h',tasks:[{id:'t025',titre:'Question bloc formation',duree:'1h',cat:'entretien'}]},
+    {id:'S3WE',label:'Weekend',sub:'4h-5h',tasks:[
+      {id:'t026',titre:'Question bloc métier 2',duree:'1h30',cat:'entretien'},
+      {id:'t027',titre:'Présentation 3min/5min (pourquoi pilote/AF/cadets)',duree:'1h30',cat:'candidature'},
+      {id:'t028',titre:'Vidéo : Notre cerveau sait-il encore se concentrer',duree:'~15min',cat:'video',lien:'https://www.youtube.com/watch?v=m9VwpHn2pVs'},
+      {id:'t029',titre:'Plans B (sessions 1+2)',duree:'1h30',cat:'perso'},
+      {id:'t030',titre:'Présentation 10min (pourquoi pilote/AF/cadets)',duree:'1h',cat:'candidature'},
+      {id:'t031',titre:"Vidéo : Faut-il échouer pour réussir (ARTE)",duree:'~15min',cat:'video',lien:'https://www.youtube.com/watch?v=_N54rOqXyOc'},
+    ]},
+  ]},
+  {id:'S4',label:'S4 — Entraînements intensifs',jours:[
+    {id:'S4D0',label:'Jour 1',sub:'1h30',tasks:[{id:'t032',titre:'Question bloc perso 1',duree:'1h30',cat:'entretien'}]},
+    {id:'S4D1',label:'Jour 2',sub:'~50min',tasks:[{id:'t033',titre:'Vidéo : Les 4 accords toltèques',duree:'~50min',cat:'video',lien:'https://www.youtube.com/watch?v=X_vex-d3qJ4'}]},
+    {id:'S4D2',label:'Jour 3',sub:'1h30',tasks:[{id:'t034',titre:'Question bloc perso 2',duree:'1h30',cat:'entretien'}]},
+    {id:'S4D3',label:'Jour 4',sub:'1h',tasks:[{id:'t035',titre:'Recherche + vidéos discours plus concis/synthétique',duree:'1h',cat:'perso'}]},
+    {id:'S4D4',label:'Jour 5',sub:'1h30',tasks:[{id:'t036',titre:'Question bloc perso 3',duree:'1h30',cat:'entretien'}]},
+    {id:'S4WE',label:'Weekend',sub:'5h+',tasks:[
+      {id:'t037',titre:'Entrainements IA données numériques (session 1)',duree:'1h',cat:'entretien'},
+      {id:'t038',titre:'Entrainements IA modèle entretien de groupe (session 2)',duree:'1h',cat:'entretien'},
+      {id:'t039',titre:'Sujets énigme IA',duree:'1h',cat:'entretien'},
+      {id:'t040',titre:'Session travail livre oraux 1',duree:'1h',cat:'entretien'},
+      {id:'t041',titre:'Session travail livre oraux 2',duree:'1h',cat:'entretien'},
+      {id:'t042',titre:'Airline Selection Programme (exploration chaîne)',duree:'1h',cat:'metier'},
+      {id:'t043',titre:'Vidéo : Les 5 mécanismes psy qui empêchent d\'être heureux',duree:'~15min',cat:'video',lien:'https://www.youtube.com/watch?v=OonO-eGmbwk'},
+      {id:'t044',titre:'Vidéo : Toujours faire mieux nous rend-il fou',duree:'~15min',cat:'video',lien:'https://www.youtube.com/watch?v=l6SMchiVgKM'},
+    ]},
+  ]},
+  {id:'S5',label:'S5 — Simulations & finalisation',jours:[
+    {id:'S5D0',label:'Jour 1',sub:'1h',tasks:[{id:'t045',titre:'Simulation orale : bloc perso (1 question tirée au sort)',duree:'1h',cat:'entretien'}]},
+    {id:'S5D1',label:'Jour 2',sub:'1h',tasks:[{id:'t046',titre:'Relecture LM/CV anglais (ajustements finaux)',duree:'1h',cat:'candidature'}]},
+    {id:'S5D2',label:'Jour 3',sub:'1h',tasks:[{id:'t047',titre:'Simulation orale : bloc formation + bloc métier',duree:'1h',cat:'entretien'}]},
+    {id:'S5D3',label:'Jour 4',sub:'30min',tasks:[{id:'t048',titre:'Relecture notes Freddy/Matthieu (synthèse)',duree:'30min',cat:'metier'}]},
+    {id:'S5D4',label:'Jour 5',sub:'1h',tasks:[{id:'t049',titre:'Préparation entretien de groupe : révision méthode IA',duree:'1h',cat:'entretien'}]},
+    {id:'S5WE',label:'Weekend',sub:'6h+',tasks:[
+      {id:'t050',titre:'Simulation orale complète (3min + 5min + 10min)',duree:'1h30',cat:'entretien'},
+      {id:'t051',titre:'Révision sujets énigme + entrainement chiffres',duree:'1h',cat:'entretien'},
+      {id:'t052',titre:"Vidéo : Et si l'attente était une préparation",duree:'~20min',cat:'video',lien:'https://www.youtube.com/watch?v=YXwCWS-vlQE'},
+      {id:'t053',titre:'Vidéo : interview auteur "cher futur pilote"',duree:'~50-60min',cat:'video',lien:'https://www.youtube.com/watch?v=hT1bXZBKhg0'},
+      {id:'t054',titre:'Relecture / consolidation candidature AF',duree:'1h',cat:'candidature'},
+      {id:'t055',titre:'Vidéo : Le manuel le plus complet sur la réussite',duree:'~50min',cat:'video',lien:'https://www.youtube.com/watch?v=Ii64icN2vW4'},
+      {id:'t056',titre:"Vidéo : Nos nouvelles vies avec l'IA",duree:'~20min',cat:'video',lien:'https://www.youtube.com/watch?v=efJCPEBbXoc'},
+      {id:'t057',titre:'Simulation orale complète chronométrée',duree:'1h30',cat:'entretien'},
+      {id:'t058',titre:'Simulation orale finale complète (jury blanc si possible)',duree:'2h',cat:'entretien'},
+      {id:'t059',titre:'Debrief + ajustements derniers détails',duree:'1h',cat:'entretien'},
+      {id:'t060',titre:'Relecture finale + repos mental',duree:'1h',cat:'perso'},
+    ]},
+  ]},
+]};
+
+// ── State ───────────────────────────────────────────────────────────────────
+let prog=null,fiches=[],done=new Set(),currentWeek=0,draggingId=null,movingTaskId=null,trainingTaskId=null,aiAbort=null;
+
+// ── Storage ─────────────────────────────────────────────────────────────────
+function loadAll(){
+  prog=JSON.parse(localStorage.getItem('psy2_prog')||'null')||JSON.parse(JSON.stringify(PROG_DEFAULT));
+  fiches=JSON.parse(localStorage.getItem('psy2_fiches')||'[]');
+  done=new Set(JSON.parse(localStorage.getItem('psy2_done')||'[]'));
+}
+function saveProg(){localStorage.setItem('psy2_prog',JSON.stringify(prog));}
+function saveFiches(){localStorage.setItem('psy2_fiches',JSON.stringify(fiches));}
+function saveDone(){localStorage.setItem('psy2_done',JSON.stringify([...done]));}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function catBadge(cat){
+  const c=CATS[cat]||{label:cat,color:'#94a3b8'};
+  return `<span class="cat-badge" style="background:${c.color}22;border:1px solid ${c.color};color:${c.color};border-left:none;">${c.label}</span>`;
+}
+function getTask(id){
+  for(const s of prog.semaines)for(const d of s.jours)for(const t of d.tasks)if(t.id===id)return t;
+  return null;
+}
+function getTaskDay(id){
+  for(const s of prog.semaines)for(const d of s.jours)if(d.tasks.some(t=>t.id===id))return d;
+  return null;
+}
+function allTasks(){
+  const r=[];
+  for(const s of prog.semaines)for(const d of s.jours)for(const t of d.tasks)r.push(t);
+  return r;
+}
+function getTodayDayId(){
+  const sd=localStorage.getItem('psy2_start');
+  if(!sd)return null;
+  const start=new Date(sd);start.setHours(0,0,0,0);
+  const now=new Date();now.setHours(0,0,0,0);
+  const diff=Math.round((now-start)/86400000);
+  if(diff<0||diff>=35)return null;
+  const wi=Math.floor(diff/7);
+  const di=diff%7;
+  const sem=prog.semaines[wi];
+  if(!sem)return null;
+  const dayIdx=di<=4?di:5;
+  return sem.jours[Math.min(dayIdx,sem.jours.length-1)]?.id||null;
+}
+function getQuestions(task){
+  for(const key of Object.keys(QMAP)){if(task.titre.toLowerCase().includes(key.toLowerCase().slice(0,20)))return QMAP[key];}
+  if(/bloc perso/.test(task.titre))return QSIM_PERSO;
+  if(/bloc m[eé]tier/.test(task.titre))return QSIM_METIER;
+  if(/bloc formation/.test(task.titre))return QSIM_FORM;
+  if(/pi[eè]ges|piège/.test(task.titre))return QPIEGE;
+  if(/simulation/.test(task.titre)){const all=[...QSIM_PERSO,...QSIM_METIER,...QSIM_FORM];return all.sort(()=>Math.random()-.5).slice(0,6);}
+  return null;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderAll(){renderToday();renderProgress();renderTabs();renderWeek(currentWeek);renderFiches();}
+
+function renderToday(){
+  const sec=document.getElementById('today-section');
+  const sd=localStorage.getItem('psy2_start');
+  if(!sd){
+    sec.innerHTML=`<div class="today-banner"><div class="today-label">📅 Programme PSY2 Cadets</div><div class="today-title">Configure la date de départ</div><div style="font-size:.85rem;color:#94a3b8;margin-bottom:.9rem">Définis le jour 1 de ta semaine 1 pour voir tes tâches du jour.</div><button class="btn-p" onclick="openSettings()">⚙️ Configurer</button></div>`;
+    return;
+  }
+  const dayId=getTodayDayId();
+  if(!dayId){
+    const diff=Math.round((new Date()-new Date(sd))/86400000);
+    sec.innerHTML=`<div class="today-banner"><div class="today-label">📅 Aujourd'hui</div><div class="today-title">${diff<0?'Programme pas encore démarré':'🎉 Programme terminé !'}</div></div>`;
+    return;
+  }
+  let dayTasks=[];
+  for(const s of prog.semaines)for(const d of s.jours)if(d.id===dayId){dayTasks=d.tasks;break;}
+  const remaining=dayTasks.filter(t=>!done.has(t.id));
+  sec.innerHTML=`<div class="today-banner">
+    <div class="today-label">📅 Aujourd'hui</div>
+    <div class="today-title">${remaining.length===0?'✅ Toutes les tâches du jour sont faites !':'Tes tâches du jour ('+remaining.length+' restante'+(remaining.length>1?'s':'')+')'}</div>
+    ${dayTasks.map(t=>`<div class="today-task" onclick="openTraining('${t.id}')">
+      <span class="today-task-title">${done.has(t.id)?'✅ ':''}<span style="color:${CATS[t.cat]?.color||'#94a3b8'}">[${CATS[t.cat]?.label||t.cat}]</span> ${t.titre}</span>
+      <span class="today-task-dur">${t.duree}</span>
+      <button class="today-task-btn" onclick="event.stopPropagation();openTraining('${t.id}')">▶ Démarrer</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderProgress(){
+  const tasks=allTasks();
+  const n=tasks.filter(t=>done.has(t.id)).length;
+  const pct=tasks.length?Math.round(n/tasks.length*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent=`${n} / ${tasks.length} tâches (${pct}%)`;
+}
+
+function renderTabs(){
+  const el=document.getElementById('week-tabs');
+  el.innerHTML=prog.semaines.map((s,i)=>`<button class="week-tab${i===currentWeek?' active':''}" onclick="currentWeek=${i};renderWeek(${i});document.querySelectorAll('.week-tab').forEach((b,j)=>b.classList.toggle('active',j===${i}))">${s.label}</button>`).join('');
+}
+
+function renderWeek(wi){
+  const sem=prog.semaines[wi];
+  const todayDayId=getTodayDayId();
+  const el=document.getElementById('week-content');
+  el.innerHTML=`<div class="week-grid">${sem.jours.map(d=>{
+    const isToday=d.id===todayDayId;
+    const tasksDone=d.tasks.filter(t=>done.has(t.id)).length;
+    return `<div class="day-col${isToday?' today-col':''}" id="day-${d.id}"
+      ondragover="event.preventDefault();document.getElementById('day-${d.id}').classList.add('drag-over')"
+      ondragleave="document.getElementById('day-${d.id}').classList.remove('drag-over')"
+      ondrop="dropOnDay(event,'${d.id}')">
+      <div class="day-label">${d.label}${isToday?' 📍':''} <span class="day-sub">${d.sub}</span></div>
+      <div id="tasks-${d.id}">${d.tasks.map(t=>renderTask(t)).join('')}</div>
+      <div class="add-row">
+        <input class="add-inp" id="add-${d.id}" placeholder="+ Ajouter une tâche…" onkeydown="if(event.key==='Enter')addTask('${d.id}')">
+        <button class="add-btn" onclick="addTask('${d.id}')">+</button>
+      </div>
+      ${tasksDone>0?`<div style="font-size:.67rem;color:#94a3b8;margin-top:.4rem;">${tasksDone}/${d.tasks.length} fait${tasksDone>1?'es':''}</div>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderTask(t){
+  const c=CATS[t.cat]||{color:'#94a3b8'};
+  return `<div class="task-card${done.has(t.id)?' done':''}" id="task-${t.id}" draggable="true"
+    style="border-left-color:${c.color}"
+    ondragstart="dragStart(event,'${t.id}')"
+    ondragend="dragEnd(event)">
+    <div class="task-title">${t.titre}</div>
+    <div class="task-meta">${catBadge(t.cat)}<span class="task-dur">${t.duree}</span></div>
+    <div class="task-actions">
+      <button class="tbtn tbtn-train" onclick="openTraining('${t.id}')">▶ Entraîner</button>
+      <button class="tbtn tbtn-move" onclick="openMove('${t.id}')">⇄ Déplacer</button>
+      <button class="tbtn tbtn-del" onclick="deleteTask('${t.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+function renderFiches(){
+  fiches.sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt));
+  document.getElementById('fiche-count').textContent=fiches.length;
+  const el=document.getElementById('fiche-list');
+  if(!fiches.length){el.innerHTML='<div style="color:#94a3b8;font-size:.82rem;padding:.5rem 0">Aucune fiche — complète tes premières tâches pour les voir ici.</div>';return;}
+  el.innerHTML=fiches.map(f=>`<div class="fiche-item" onclick="openFiche('${f.id}')">
+    ${catBadge(f.cat)}
+    <div class="fiche-title">${f.titre}</div>
+    <div class="fiche-date">${new Date(f.completedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+  </div>`).join('');
+}
+
+// ── Drag & Drop ──────────────────────────────────────────────────────────────
+function dragStart(e,id){draggingId=id;setTimeout(()=>document.getElementById('task-'+id)?.classList.add('dragging'),0);}
+function dragEnd(e){if(draggingId)document.getElementById('task-'+draggingId)?.classList.remove('dragging');draggingId=null;document.querySelectorAll('.day-col').forEach(c=>c.classList.remove('drag-over'));}
+function dropOnDay(e,dayId){
+  e.preventDefault();
+  document.getElementById('day-'+dayId)?.classList.remove('drag-over');
+  if(!draggingId||!dayId)return;
+  moveTaskTo(draggingId,dayId);
+  draggingId=null;
+}
+
+// ── Move / Add / Delete ──────────────────────────────────────────────────────
+function moveTaskTo(taskId,toDayId){
+  let task=null;
+  for(const s of prog.semaines)for(const d of s.jours){
+    const idx=d.tasks.findIndex(t=>t.id===taskId);
+    if(idx>-1){task=d.tasks.splice(idx,1)[0];break;}
+  }
+  if(!task)return;
+  for(const s of prog.semaines)for(const d of s.jours)if(d.id===toDayId){d.tasks.push(task);break;}
+  saveProg();renderAll();
+}
+
+function openMove(id){
+  movingTaskId=id;
+  const task=getTask(id);
+  const list=document.getElementById('move-list');
+  list.innerHTML=prog.semaines.map(s=>
+    `<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin:.6rem 0 .2rem">${s.label}</div>`+
+    s.jours.map(d=>`<button class="move-day-btn" onclick="moveTaskTo('${id}','${d.id}');closeModal('modal-move')">${d.label} <span style="color:#94a3b8">${d.sub}</span></button>`).join('')
+  ).join('');
+  document.getElementById('modal-move').style.display='flex';
+}
+
+function addTask(dayId){
+  const inp=document.getElementById('add-'+dayId);
+  const title=inp.value.trim();
+  if(!title)return;
+  const id='u'+Date.now();
+  for(const s of prog.semaines)for(const d of s.jours)if(d.id===dayId){d.tasks.push({id,titre:title,duree:'—',cat:'entretien'});break;}
+  inp.value='';
+  saveProg();renderAll();
+}
+
+function deleteTask(id){
+  if(!confirm('Supprimer cette tâche ?'))return;
+  for(const s of prog.semaines)for(const d of s.jours){
+    const idx=d.tasks.findIndex(t=>t.id===id);
+    if(idx>-1){d.tasks.splice(idx,1);break;}
+  }
+  done.delete(id);
+  saveProg();saveDone();renderAll();
+}
+
+// ── Training Modal ────────────────────────────────────────────────────────────
+function openTraining(id){
+  trainingTaskId=id;
+  const t=getTask(id);
+  if(!t)return;
+  const c=CATS[t.cat]||{label:t.cat,color:'#94a3b8'};
+  document.getElementById('mt-title').textContent=t.titre;
+  document.getElementById('mt-sub').innerHTML=`${catBadge(t.cat)} <span style="color:#94a3b8;font-size:.78rem;">${t.duree}</span>`;
+
+  let body='';
+  const qs=getQuestions(t);
+
+  if(t.cat==='video'){
+    body=`${t.lien?`<a class="video-link" href="${t.lien}" target="_blank" rel="noopener">▶ Ouvrir la vidéo</a>`:''}
+    <label class="field-label">📝 Tes notes de visionnage</label>
+    <textarea class="fi" id="train-notes" rows="6" placeholder="Note ici les idées clés, citations, exemples… tout ce qui te frappe pendant le visionnage."></textarea>`;
+  } else if(qs){
+    body=`<div style="margin-bottom:.6rem"><div class="field-label" style="margin-top:0">💬 Questions de ce bloc — clique pour sélectionner</div>
+    <div>${qs.map(q=>`<span class="q-chip" onclick="document.getElementById('train-q').value='${q.replace(/'/g,"\\'")}'">${q}</span>`).join('')}</div></div>
+    <label class="field-label">Question choisie</label>
+    <input class="fi" id="train-q" placeholder="Colle ou tape ta question…">
+    <label class="field-label">Ta réponse (parle à voix haute puis retranscris)</label>
+    <textarea class="fi" id="train-ans" rows="5" placeholder="Tape ta réponse ici…"></textarea>`;
+  } else {
+    body=`<label class="field-label">📝 Tes notes / observations</label>
+    <textarea class="fi" id="train-notes" rows="6" placeholder="Ce que tu as appris, retenu, tes réflexions…"></textarea>`;
+  }
+
+  body+=`<div class="ai-box" id="ai-out" style="display:none"></div>`;
+  document.getElementById('mt-body').innerHTML=body;
+
+  const actions=document.getElementById('mt-actions');
+  if(t.cat==='video'||!qs){
+    actions.innerHTML=`<button class="btn-p" id="ai-btn" onclick="runAI()">✨ Analyser avec l'IA →</button>
+    <button class="btn-g" id="done-btn" onclick="markDone()" style="display:none">✅ Marquer comme terminé</button>
+    <button class="btn-s" onclick="closeModal('modal-train')">Fermer</button>`;
+  } else {
+    actions.innerHTML=`<button class="btn-p" id="ai-btn" onclick="runAI()">✨ Obtenir un retour coach →</button>
+    <button class="btn-g" id="done-btn" onclick="markDone()" style="display:none">✅ Marquer comme terminé</button>
+    <button class="btn-s" onclick="closeModal('modal-train')">Fermer</button>`;
+  }
+
+  // Pre-fill if already done
+  const existing=fiches.find(f=>f.taskId===id);
+  if(existing){
+    if(document.getElementById('train-notes'))document.getElementById('train-notes').value=existing.notes||'';
+    if(document.getElementById('train-q'))document.getElementById('train-q').value=existing.question||'';
+    if(document.getElementById('train-ans'))document.getElementById('train-ans').value=existing.notes||'';
+    if(existing.aiResponse){
+      const box=document.getElementById('ai-out');
+      box.style.display='block';
+      box.textContent=existing.aiResponse;
+    }
+    document.getElementById('done-btn').style.display='inline-block';
+  }
+
+  document.getElementById('modal-train').style.display='flex';
+}
+
+function runAI(){
+  const t=getTask(trainingTaskId);
+  if(!t)return;
+  const apiKey=localStorage.getItem('psy2_api_key');
+  if(!apiKey){
+    alert('Configure ta clé API Claude dans les paramètres ⚙️');
+    return;
+  }
+  const qs=getQuestions(t);
+  let userMsg='';
+  if(t.cat==='video'){
+    const notes=document.getElementById('train-notes')?.value.trim();
+    if(!notes){alert('Écris tes notes de visionnage d\'abord.');return;}
+    userMsg=`Vidéo regardée : "${t.titre}"\n\nMes notes de visionnage :\n${notes}`;
+  } else if(qs){
+    const q=document.getElementById('train-q')?.value.trim();
+    const ans=document.getElementById('train-ans')?.value.trim();
+    if(!ans){alert('Écris ta réponse d\'abord.');return;}
+    userMsg=`Question d'entretien : "${q||t.titre}"\n\nMa réponse :\n${ans}`;
+  } else {
+    const notes=document.getElementById('train-notes')?.value.trim();
+    if(!notes){alert('Écris tes notes d\'abord.');return;}
+    userMsg=`Tâche : "${t.titre}"\n\nMes notes :\n${notes}`;
+  }
+
+  const sysprompts={
+    video:`Tu es un coach expert en préparation aux PSY2 Air France programme cadets. L'utilisatrice prépare ses entretiens de sélection. Elle vient de regarder une vidéo et a pris ces notes.
+Fais-lui un retour structuré :
+**📌 Points clés retenus** (3-5 bullet points synthétiques)
+**✈️ Comment l'appliquer aux PSY2** (3 conseils concrets liés à l'entretien oral, la présentation, les questions jury)
+**🎯 3 exercices pratiques** pour ancrer ces bonnes pratiques avant les oraux
+Sois concis, direct, actionnable.`,
+    entretien:`Tu es un membre du jury PSY2 Air France et coach spécialisé sélections cadets pilote. L'utilisatrice répond à une question d'entretien.
+Donne-lui un retour structuré :
+**✅ Points forts de cette réponse**
+**⚠️ Points à améliorer**
+**💬 Comment reformuler** (donne un exemple de reformulation plus percutante)
+**🎯 Le conseil clé**
+Le jury PSY2 évalue : clarté & synthèse, sincérité & authenticité, motivation & cohérence du projet pilote, qualités CRM (leadership, communication, gestion du stress, prise de décision). La candidate est étudiante en BIA/École de commerce, passionnée d'aviation depuis longtemps. Sois bienveillant mais exigeant.`,
+    candidature:`Tu es un coach de préparation aux candidatures pilote de ligne. L'utilisatrice travaille sur ses documents ou présentation.
+Analyse ses notes, identifie les points forts à valoriser, les lacunes, et donne des conseils concrets pour lier ses expériences aux qualités d'un pilote de ligne (leadership, CRM, gestion du stress, travail d'équipe, rigueur, honnêteté intellectuelle). Structure ta réponse en **Forces**, **Axes d'amélioration**, **Conseils concrets**.`,
+    metier:`Tu es un expert du monde aéronautique et coach PSY2. L'utilisatrice enrichit sa connaissance du métier de pilote et de la compagnie Air France.
+Synthétise les informations clés retenues, identifie ce qui est le plus utile pour l'entretien PSY2, et suggère 3 points à approfondir. Aide-la à structurer sa connaissance du métier pour répondre avec conviction et précision aux questions du jury.`,
+    perso:`Tu es un coach de développement personnel spécialisé en sélections pilote. L'utilisatrice travaille sur sa connaissance d'elle-même.
+Analyse ses notes, aide-la à identifier ses qualités de pilote (leadership, gestion du stress, intelligence émotionnelle, travail d'équipe, humilité, résilience), et propose 3 exercices pour mieux se connaître et se présenter authentiquement en entretien PSY2.`,
+  };
+  const sys=sysprompts[t.cat]||sysprompts.entretien;
+
+  const btn=document.getElementById('ai-btn');
+  const box=document.getElementById('ai-out');
+  btn.disabled=true;btn.textContent='✨ Analyse en cours…';
+  box.style.display='block';box.className='ai-box ai-pulse';box.textContent='L\'IA réfléchit…';
+
+  callAI(sys,userMsg,(chunk)=>{box.textContent=chunk;},
+    (final)=>{
+      box.className='ai-box';
+      box.textContent=final;
+      btn.disabled=false;btn.textContent='✨ Relancer l\'IA';
+      document.getElementById('done-btn').style.display='inline-block';
+      // Auto-save to fiche
+      saveCurrentFiche(final);
+    }
+  );
+}
+
+function saveCurrentFiche(aiResponse){
+  const t=getTask(trainingTaskId);
+  if(!t)return;
+  const qs=getQuestions(t);
+  const notes=document.getElementById(qs?'train-ans':'train-notes')?.value.trim()||'';
+  const q=document.getElementById('train-q')?.value.trim()||'';
+  const existing=fiches.findIndex(f=>f.taskId===t.id);
+  const fiche={id:existing>-1?fiches[existing].id:'f'+Date.now(),taskId:t.id,titre:t.titre,cat:t.cat,question:q,notes,aiResponse,completedAt:new Date().toISOString()};
+  if(existing>-1)fiches[existing]=fiche;else fiches.push(fiche);
+  saveFiches();renderFiches();
+}
+
+function markDone(){
+  const t=getTask(trainingTaskId);
+  if(!t)return;
+  done.add(t.id);
+  saveDone();
+  // Ensure fiche is saved
+  const existing=fiches.find(f=>f.taskId===t.id);
+  if(!existing)saveCurrentFiche('(marqué terminé sans analyse IA)');
+  closeModal('modal-train');
+  renderAll();
+}
+
+// ── AI Call (streaming) ───────────────────────────────────────────────────────
+async function callAI(sys,user,onChunk,onDone){
+  const apiKey=localStorage.getItem('psy2_api_key');
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1200,
+        stream:true,
+        system:sys,
+        messages:[{role:'user',content:user}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();onDone('❌ Erreur API : '+(e.error?.message||resp.status));return;}
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let full='';
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      const lines=dec.decode(value).split('\n');
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const data=line.slice(6).trim();
+        if(data==='[DONE]')continue;
+        try{
+          const p=JSON.parse(data);
+          if(p.type==='content_block_delta'&&p.delta?.text){full+=p.delta.text;onChunk(full);}
+        }catch{}
+      }
+    }
+    onDone(full||'(réponse vide)');
+  }catch(e){onDone('❌ Erreur réseau : '+e.message);}
+}
+
+// ── Fiche Detail ──────────────────────────────────────────────────────────────
+function openFiche(id){
+  const f=fiches.find(x=>x.id===id);
+  if(!f)return;
+  const dt=new Date(f.completedAt).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('fiche-detail').innerHTML=`
+    <div class="modal-title">${f.titre}</div>
+    <div style="display:flex;align-items:center;gap:.6rem;margin:.5rem 0 1.1rem">${catBadge(f.cat)}<span style="font-size:.72rem;color:#94a3b8">${dt}</span></div>
+    ${f.question?`<div class="field-label" style="margin-top:0">Question</div><div style="background:#f1f5f9;border-radius:6px;padding:.55rem .8rem;font-size:.82rem;margin-bottom:.75rem">${f.question}</div>`:''}
+    ${f.notes?`<div class="field-label" style="margin-top:0">Tes notes / réponse</div><div style="background:#f1f5f9;border-radius:6px;padding:.55rem .8rem;font-size:.82rem;white-space:pre-wrap;margin-bottom:.75rem">${f.notes}</div>`:''}
+    ${f.aiResponse?`<div class="field-label" style="margin-top:0">✨ Retour IA</div><div class="ai-box" style="margin-top:0">${f.aiResponse}</div>`:''}
+    <div style="margin-top:1rem;display:flex;gap:.5rem">
+      <button class="btn-p" onclick="openTraining('${f.taskId}');closeModal('modal-fiche')">↩ Rouvrir & ré-entraîner</button>
+      <button class="btn-s" onclick="if(confirm('Supprimer cette fiche ?')){fiches=fiches.filter(x=>x.id!=='${id}');done.delete('${f.taskId}');saveFiches();saveDone();closeModal('modal-fiche');renderAll()}">🗑 Supprimer</button>
+      <button class="btn-s" onclick="closeModal('modal-fiche')">Fermer</button>
+    </div>`;
+  document.getElementById('modal-fiche').style.display='flex';
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('api-key-in').value=localStorage.getItem('psy2_api_key')||'';
+  document.getElementById('start-date-in').value=localStorage.getItem('psy2_start')||'';
+  document.getElementById('modal-settings').style.display='flex';
+}
+function saveSettings(){
+  const k=document.getElementById('api-key-in').value.trim();
+  const sd=document.getElementById('start-date-in').value;
+  if(k)localStorage.setItem('psy2_api_key',k);
+  if(sd)localStorage.setItem('psy2_start',sd);
+  closeModal('modal-settings');
+  renderAll();
+}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';}));
+loadAll();renderAll();
+</script>
+</body>
+</html>
