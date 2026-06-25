@@ -5,164 +5,107 @@
 <title>Checklist — AviHub</title>
 <link rel="stylesheet" href="../style.css">
 <style>
-/* ── Layout ── */
-.cl-layout{display:grid;grid-template-columns:1fr 360px;gap:1.25rem;align-items:start;}
-@media(max-width:900px){.cl-layout{grid-template-columns:1fr;}}
-
-/* ── RTDB ── */
-.rtdb{background:#060d1a;border:2px solid #1e3a5f;border-radius:16px;padding:1.1rem;position:sticky;top:68px;}
-.rtdb-title{font-size:.65rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;}
-.rtdb-id{font-family:monospace;color:#22c55e;font-size:.7rem;}
-
-/* Gauges */
-.gauges-row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;padding-bottom:.85rem;border-bottom:1px solid #1e3a5f;margin-bottom:.85rem;}
-.gw{display:flex;flex-direction:column;align-items:center;gap:.25rem;}
-.gl{font-size:.55rem;color:#475569;text-transform:uppercase;letter-spacing:.05em;text-align:center;}
-
-/* Fuel tube */
-.fuel-tube{width:14px;height:56px;background:#050d18;border:1px solid #1e3a5f;border-radius:3px;position:relative;overflow:hidden;}
-.fuel-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,#15803d,#22c55e);transition:height .8s;border-radius:0 0 2px 2px;}
-.fuel-fill.low{background:linear-gradient(to top,#dc2626,#f97316);}
-
-/* Horametre */
-.hm{font-family:'Consolas',monospace;font-size:.85rem;color:#22c55e;background:#050d18;border:1px solid #1e3a5f;border-radius:5px;padding:.2rem .5rem;letter-spacing:.08em;min-width:72px;text-align:center;}
-
-/* Phase controls zone */
-.ctrl-zone{min-height:160px;padding:.6rem 0 .85rem;border-bottom:1px solid #1e3a5f;margin-bottom:.75rem;}
-.ctrl-zone-title{font-size:.62rem;color:#3b82f6;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:.75rem;}
-.ctrl-grid{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;}
-.ctrl-g{display:flex;flex-direction:column;align-items:center;gap:.35rem;}
-.ctrl-lbl{font-size:.58rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;text-align:center;max-width:60px;}
-.ctrl-state{font-size:.58rem;color:#94a3b8;text-align:center;min-height:.9rem;}
-
-/* Key slot */
-.key-slot{width:44px;height:44px;background:#050d18;border:2px solid #1e3a5f;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:1.2rem;}
-.key-slot:hover{border-color:#f59e0b;}
-.key-slot.on{border-color:#f59e0b;background:#1a1200;box-shadow:0 0 10px rgba(245,158,11,.35);}
-
-/* Door */
-.door{width:22px;height:58px;background:#050d18;border:2px solid #1e3a5f;border-radius:4px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:.7rem;}
-.door:hover{border-color:#3b82f6;}
-.door.closed{background:#052e16;border-color:#22c55e;color:#22c55e;}
-
-/* Parking brake */
-.pbrake{width:44px;height:44px;background:#050d18;border:3px solid #1e3a5f;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#64748b;transition:all .2s;text-align:center;line-height:1.2;}
-.pbrake:hover{border-color:#f59e0b;}
-.pbrake.on{background:#2d0a0a;border-color:#ef4444;color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.3);}
-
-/* Toggle */
-.tog{width:36px;height:20px;background:#1e3a5f;border-radius:10px;position:relative;cursor:pointer;transition:background .2s;border:1px solid #334155;}
-.tog::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:1px;left:1px;transition:transform .2s;}
-.tog.on{background:#22c55e;border-color:#16a34a;}
-.tog.on::after{transform:translateX(16px);}
-.tog.err{background:#dc2626;}
-
-/* Fuel valve */
-.fvalve{width:44px;height:44px;background:#050d18;border:2px solid #1e3a5f;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
-.fvalve:hover{border-color:#3b82f6;}
-.fvalve.on{border-color:#22c55e;background:#052e16;}
-.fvalve-line{width:4px;height:16px;background:#475569;border-radius:2px;transition:all .3s;}
+.ac-bar{display:flex;gap:.6rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.ac-btn{flex:1;min-width:200px;background:var(--bg2);border:1.5px solid var(--border);color:var(--muted);padding:.8rem 1.1rem;border-radius:10px;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit;}
+.ac-btn:hover{border-color:rgba(245,158,11,.5);}
+.ac-btn.active{border-color:var(--accent);background:rgba(245,158,11,.05);}
+.ac-reg{font-size:1.1rem;font-weight:700;color:var(--accent);letter-spacing:.03em;}
+.ac-name{font-size:.85rem;font-weight:500;color:var(--text);margin:.15rem 0;}
+.ac-sub{font-size:.72rem;color:var(--muted);}
+.rtdb{background:#060d1a;border:1.5px solid #1e3355;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.rtdb-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid #1e3355;}
+.rtdb-title{font-size:.7rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.1em;}
+.rtdb-id{font-family:'Courier New',monospace;font-size:.75rem;color:#22c55e;font-weight:600;}
+.gauges-row{display:flex;gap:1.25rem;align-items:flex-end;flex-wrap:wrap;justify-content:center;padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px solid #1e3355;}
+.gw{display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+.gl{font-size:.58rem;color:#475569;text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+.fuel-tube{width:16px;height:60px;background:#050d18;border:1px solid #1e3355;border-radius:3px;position:relative;overflow:hidden;}
+.fuel-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,#166534,#22c55e);transition:height .8s;border-radius:0 0 2px 2px;}
+.fuel-fill.low{background:linear-gradient(to top,#991b1b,#f97316);}
+.hm-box{font-family:'Courier New',monospace;font-size:.82rem;color:#22c55e;background:#050d18;border:1px solid #1e3355;border-radius:5px;padding:.25rem .55rem;letter-spacing:.08em;min-width:72px;text-align:center;}
+.ctrl-panel{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #1e3355;align-items:flex-end;}
+.ctrl-group{display:flex;flex-direction:column;align-items:center;gap:.4rem;}
+.ctrl-sep{width:1px;background:#1e3355;align-self:stretch;margin:0 .15rem;}
+.ctrl-lbl{font-size:.57rem;color:#475569;text-transform:uppercase;letter-spacing:.06em;text-align:center;max-width:58px;line-height:1.3;}
+.ctrl-sub{font-size:.55rem;color:#334155;text-align:center;min-height:12px;}
+.key-slot{width:40px;height:40px;background:#050d18;border:1.5px solid #1e3355;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:1.1rem;}
+.key-slot:hover{border-color:rgba(245,158,11,.6);}
+.key-slot.on{border-color:#f59e0b;background:rgba(245,158,11,.08);box-shadow:0 0 10px rgba(245,158,11,.2);}
+.door{width:20px;height:52px;background:#050d18;border:1.5px solid #1e3355;border-radius:3px;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;font-size:.75rem;}
+.door:hover{border-color:rgba(59,130,246,.5);}
+.door.on{background:rgba(34,197,94,.08);border-color:#22c55e;color:#22c55e;}
+.pbrake{width:40px;height:40px;background:#050d18;border:2px solid #1e3355;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#475569;transition:all .18s;text-align:center;line-height:1.2;}
+.pbrake:hover{border-color:rgba(245,158,11,.5);}
+.pbrake.on{background:rgba(239,68,68,.08);border-color:#ef4444;color:#ef4444;}
+.tog{width:34px;height:19px;background:#1e3355;border-radius:999px;position:relative;cursor:pointer;transition:background .18s;flex-shrink:0;}
+.tog::after{content:'';position:absolute;width:15px;height:15px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.tog.on{background:#22c55e;}
+.tog.on::after{transform:translateX(15px);}
+.fvalve{width:40px;height:40px;background:#050d18;border:1.5px solid #1e3355;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.fvalve:hover{border-color:rgba(59,130,246,.5);}
+.fvalve.on{border-color:#22c55e;background:rgba(34,197,94,.07);}
+.fvalve-line{width:3px;height:14px;background:#334155;border-radius:2px;transition:all .3s;}
 .fvalve.on .fvalve-line{background:#22c55e;transform:rotate(90deg);}
-
-/* Pin */
-.pin-btn{width:44px;height:44px;background:#2d0a0a;border:2px solid #ef4444;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .2s;}
-.pin-btn.gone{background:#052e16;border-color:#22c55e;opacity:.6;cursor:default;}
-
-/* Master switch */
-.master{width:44px;height:44px;background:#050d18;border:2px solid #1e3a5f;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .2s;}
-.master .mlev{width:5px;height:18px;background:#334155;border-radius:3px;transition:all .2s;transform-origin:bottom center;}
-.master.on .mlev{background:#22c55e;transform:rotate(-30deg);}
-.master.on{border-color:#22c55e;background:#052e16;}
-
-/* Starter */
-.starter-btn{width:72px;height:72px;background:#7f1d1d;border:3px solid #ef4444;border-radius:50%;color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.04em;cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;box-shadow:0 4px 12px rgba(239,68,68,.3),inset 0 2px 4px rgba(0,0,0,.3);user-select:none;}
-.starter-btn:active,.starter-btn.pressing{background:#dc2626;box-shadow:0 2px 4px rgba(239,68,68,.4),inset 0 4px 8px rgba(0,0,0,.4);transform:translateY(2px);}
-.starter-btn.ok{background:#14532d;border-color:#22c55e;box-shadow:0 4px 10px rgba(34,197,94,.3);}
-
-/* RPM Slider */
-.rpm-slw{display:flex;flex-direction:column;align-items:center;gap:.4rem;}
-.rpm-sl{-webkit-appearance:none;width:150px;height:7px;border-radius:4px;background:#1e3a5f;cursor:pointer;outline:none;}
-.rpm-sl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#f59e0b;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);}
-.rpm-disp{font-family:monospace;font-size:.82rem;color:#f59e0b;font-weight:700;}
-
-/* Lane A/B test btns */
-.lane-test{display:flex;flex-direction:column;gap:.3rem;}
-.lt-btn{background:#050d18;border:1px solid #1e3a5f;color:#64748b;padding:.3rem .5rem;border-radius:5px;cursor:pointer;font-size:.65rem;font-weight:700;transition:all .15s;text-align:center;}
-.lt-btn:hover{border-color:#f59e0b;color:#f59e0b;}
-.lt-btn.off-state{border-color:#ef4444;color:#ef4444;background:#1f0a0a;}
-
-/* Flaps */
+.pin-btn{width:40px;height:40px;background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.4);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .18s;}
+.pin-btn.on{background:rgba(34,197,94,.08);border-color:#22c55e;opacity:.6;cursor:default;}
+.master-sw{width:40px;height:40px;background:#050d18;border:1.5px solid #1e3355;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .18s;}
+.master-sw .lv{width:4px;height:16px;background:#1e3355;border-radius:2px;transition:all .2s;transform-origin:bottom;}
+.master-sw.on .lv{background:#22c55e;transform:rotate(-30deg);}
+.master-sw.on{border-color:#22c55e;background:rgba(34,197,94,.07);}
+.starter-btn{width:64px;height:64px;background:rgba(239,68,68,.15);border:2px solid rgba(239,68,68,.5);border-radius:50%;color:#f87171;font-size:.58rem;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .15s;text-align:center;line-height:1.4;display:flex;align-items:center;justify-content:center;user-select:none;font-family:inherit;}
+.starter-btn:active,.starter-btn.pressing{background:rgba(239,68,68,.3);border-color:#ef4444;transform:scale(.95);}
+.starter-btn.on{background:rgba(34,197,94,.12);border-color:#22c55e;color:#22c55e;}
+.rpm-slw{display:flex;flex-direction:column;align-items:center;gap:.35rem;}
+.rpm-sl{-webkit-appearance:none;width:130px;height:5px;border-radius:3px;background:#1e3355;cursor:pointer;outline:none;}
+.rpm-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#f59e0b;border-radius:50%;border:2px solid rgba(255,255,255,.8);box-shadow:0 1px 4px rgba(0,0,0,.4);}
+.rpm-disp{font-family:'Courier New',monospace;font-size:.78rem;color:#f59e0b;font-weight:600;}
+.lt-btn{background:#050d18;border:1px solid #1e3355;color:#475569;padding:.3rem .5rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-weight:600;transition:all .12s;text-align:center;white-space:nowrap;font-family:inherit;}
+.lt-btn:hover{border-color:rgba(245,158,11,.4);color:#94a3b8;}
+.lt-btn.testing{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.08);}
 .flaps-row{display:flex;gap:.3rem;}
-.flap-btn{flex:1;background:#050d18;border:2px solid #1e3a5f;color:#64748b;padding:.35rem .25rem;border-radius:5px;cursor:pointer;font-size:.7rem;font-weight:700;text-align:center;transition:all .15s;}
-.flap-btn:hover{border-color:#3b82f6;color:#93c5fd;}
-.flap-btn.active{background:#1e3a5f;border-color:#3b82f6;color:#3b82f6;}
-
-/* Transponder */
-.xpdr-disp{background:#050d18;border:1px solid #1e3a5f;border-radius:5px;padding:.2rem .4rem;font-family:monospace;font-size:.9rem;color:#22c55e;letter-spacing:.1em;cursor:pointer;text-align:center;}
+.flap-btn{background:#050d18;border:1.5px solid #1e3355;color:#475569;padding:.3rem .45rem;border-radius:5px;cursor:pointer;font-size:.68rem;font-weight:600;text-align:center;transition:all .12s;font-family:inherit;}
+.flap-btn:hover{border-color:rgba(59,130,246,.4);color:#93c5fd;}
+.flap-btn.active{background:rgba(59,130,246,.1);border-color:#3b82f6;color:#3b82f6;}
+.xpdr-disp{background:#050d18;border:1px solid #1e3355;border-radius:5px;padding:.2rem .5rem;font-family:'Courier New',monospace;font-size:.88rem;color:#22c55e;letter-spacing:.12em;cursor:pointer;text-align:center;min-width:58px;}
 .xpdr-modes{display:flex;gap:.25rem;margin-top:.3rem;}
-.xm-btn{flex:1;background:#050d18;border:1px solid #1e3a5f;color:#475569;padding:.2rem;border-radius:4px;font-size:.58rem;font-weight:700;cursor:pointer;text-align:center;transition:all .12s;}
-.xm-btn.active{background:#1e3a5f;border-color:#3b82f6;color:#3b82f6;}
-.xpdr-kp{display:none;grid-template-columns:repeat(3,1fr);gap:.25rem;margin-top:.4rem;}
+.xm{flex:1;background:#050d18;border:1px solid #1e3355;color:#334155;padding:.22rem;border-radius:4px;font-size:.6rem;font-weight:600;cursor:pointer;text-align:center;transition:all .12s;font-family:inherit;}
+.xm.active{background:rgba(59,130,246,.12);border-color:#3b82f6;color:#3b82f6;}
+.xpdr-kp{display:none;grid-template-columns:repeat(3,1fr);gap:.22rem;margin-top:.3rem;min-width:100px;}
 .xpdr-kp.open{display:grid;}
-.xk{background:#0d1b2a;border:1px solid #1e3a5f;color:#94a3b8;padding:.3rem;border-radius:3px;font-size:.78rem;font-weight:700;cursor:pointer;text-align:center;transition:background .1s;}
-.xk:hover{background:#1e3a5f;color:#e2e8f0;}
-
-/* Status strip */
+.xk{background:#0d1b2a;border:1px solid #1e3355;color:#64748b;padding:.28rem;border-radius:3px;font-size:.75rem;font-weight:600;cursor:pointer;text-align:center;transition:background .1s;font-family:inherit;}
+.xk:hover{background:#1e3355;color:#e2e8f0;}
 .status-strip{display:flex;flex-wrap:wrap;gap:.35rem;}
-.sp{font-size:.6rem;padding:.18rem .45rem;border-radius:999px;border:1px solid;font-weight:700;white-space:nowrap;}
-.sp.on {background:#052e16;border-color:#22c55e;color:#22c55e;}
-.sp.off{background:#0a0f1a;border-color:#1e3a5f;color:#334155;}
-.sp.warn{background:#1c1007;border-color:#f59e0b;color:#f59e0b;}
-.sp.red{background:#1f0a0a;border-color:#ef4444;color:#ef4444;}
-
-/* Checklist items */
-.cl-item{display:flex;align-items:flex-start;gap:.6rem;padding:.5rem .6rem;border-radius:6px;margin-bottom:.25rem;transition:background .1s;font-size:.83rem;}
-.cl-item:hover{background:var(--bg3);}
-.cl-item.checked{opacity:.4;text-decoration:line-through;}
-.cl-item.critical{border-left:2px solid #ef4444;padding-left:.4rem;}
-.cl-item.locked{opacity:.4;pointer-events:none;}
-.cl-item input[type=checkbox]{accent-color:#22c55e;width:14px;height:14px;flex-shrink:0;margin-top:2px;cursor:pointer;}
-.ia{flex:1;color:var(--text);}
-.iv{color:var(--accent);font-size:.74rem;white-space:nowrap;}
-.ph-hdr{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
-.done-bn{display:none;background:#052e16;border:1px solid #22c55e;border-radius:7px;padding:.55rem 1rem;text-align:center;font-size:.82rem;color:#22c55e;margin-top:.6rem;}
-.done-bn.show{display:block;}
-
-/* Phase tabs */
+.sp{font-size:.6rem;padding:.18rem .45rem;border-radius:999px;border:1px solid;font-weight:600;white-space:nowrap;transition:all .2s;}
+.sp.on {background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.4);color:#22c55e;}
+.sp.off{background:rgba(255,255,255,.02);border-color:#1e3355;color:#1e3355;}
+.sp.warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.4);color:#f59e0b;}
+.prog-row{display:flex;justify-content:space-between;font-size:.73rem;color:var(--muted);margin-bottom:.3rem;}
+.prog{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:1.1rem;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);border-radius:2px;transition:width .35s;}
 .ph-tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.85rem;}
-.ph-tab{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:.3rem .65rem;border-radius:6px;cursor:pointer;font-size:.74rem;transition:all .15s;white-space:nowrap;}
-.ph-tab:hover{border-color:var(--accent2);color:var(--text);}
-.ph-tab.active{background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:700;}
-.ph-tab.done{background:#052e16;border-color:#22c55e;color:#22c55e;}
-
-/* Progress */
-.prog-row{display:flex;justify-content:space-between;font-size:.73rem;color:var(--muted);margin-bottom:.35rem;}
-.prog{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:.85rem;}
-.prog-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);border-radius:2px;transition:width .3s;}
-
-/* Radio encart */
-.radio-enc{margin:.25rem 0 .5rem 1.75rem;}
-.radio-tog{background:none;border:none;color:#3b82f6;font-size:.7rem;cursor:pointer;padding:0;display:flex;align-items:center;gap:.3rem;}
+.ph-tab{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:.3rem .65rem;border-radius:6px;cursor:pointer;font-size:.75rem;font-weight:500;transition:all .13s;white-space:nowrap;font-family:inherit;}
+.ph-tab:hover{border-color:rgba(59,130,246,.35);color:var(--text);}
+.ph-tab.active{background:rgba(59,130,246,.1);border-color:#3b82f6;color:#93c5fd;}
+.ph-tab.done{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.35);color:#22c55e;}
+.cl-item{display:flex;align-items:flex-start;gap:.6rem;padding:.48rem .6rem;border-radius:6px;margin-bottom:.22rem;transition:background .1s;font-size:.83rem;}
+.cl-item:hover{background:var(--bg3);}
+.cl-item.checked{opacity:.35;text-decoration:line-through;}
+.cl-item.critical{border-left:2px solid rgba(239,68,68,.5);padding-left:.4rem;}
+.cl-item input[type=checkbox]{accent-color:#22c55e;width:13px;height:13px;flex-shrink:0;margin-top:2px;cursor:pointer;}
+.ia{flex:1;color:var(--text);font-weight:400;}
+.iv{color:var(--accent);font-size:.72rem;white-space:nowrap;font-weight:500;}
+.ph-hdr{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:.6rem;}
+.done-bn{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:7px;padding:.55rem 1rem;text-align:center;font-size:.82rem;color:#22c55e;margin-top:.55rem;}
+.done-bn.show{display:block;}
+.radio-enc{margin:.2rem 0 .4rem 1.5rem;}
+.radio-tog{background:none;border:none;color:#3b82f6;font-size:.68rem;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:center;gap:.25rem;font-weight:500;}
 .radio-tog:hover{color:#93c5fd;}
-.radio-body{display:none;margin-top:.4rem;border-left:2px solid #1e3a5f;padding-left:.65rem;}
+.radio-body{display:none;margin-top:.35rem;border-left:1.5px solid #1e3355;padding-left:.6rem;}
 .radio-body.open{display:block;}
-.rl{font-size:.73rem;line-height:1.7;padding:.05rem 0;}
-.rp{color:#f59e0b;}
-.rt{color:#22c55e;}
-.ri{color:#64748b;font-style:italic;}
-
-/* Reset btn */
-.reset-btn{display:block;margin:1rem auto 0;background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:.4rem 1.25rem;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .15s;}
-.reset-btn:hover{border-color:var(--accent2);color:var(--text);}
-
-/* Aircraft selector */
-.ac-sel{display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
-.ac-btn{flex:1;min-width:200px;background:var(--bg2);border:2px solid var(--border);color:var(--muted);padding:.85rem 1rem;border-radius:10px;cursor:pointer;text-align:left;transition:all .2s;}
-.ac-btn:hover{border-color:var(--accent2);}
-.ac-btn.active{border-color:var(--accent);background:var(--bg3);}
-.ac-btn .reg{font-size:1.15rem;font-weight:800;color:var(--accent);}
-.ac-btn .nam{font-size:.88rem;font-weight:700;color:var(--text);margin:.15rem 0;}
-.ac-btn .sub{font-size:.72rem;color:var(--muted);}
+.rl{font-size:.72rem;line-height:1.7;padding:.04rem 0;}
+.rp{color:#f59e0b;}.rt{color:#22c55e;}.ri{color:#475569;font-style:italic;}
+.reset-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.38rem 1rem;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .13s;margin-top:1rem;font-family:inherit;}
+.reset-btn:hover{border-color:rgba(255,255,255,.2);color:var(--text);}
 </style>
 </head>
 <body>
@@ -180,775 +123,437 @@
 
 <div class="container">
   <div class="page-title">🛩️ Checklists interactives</div>
-  <div class="page-subtitle">Tableau de bord animé — instruments réactifs en temps réel</div>
+  <div class="page-subtitle">Tableau de bord — tous les instruments réactifs en temps réel</div>
 
-  <!-- Aircraft selector -->
-  <div class="ac-sel">
+  <div class="ac-bar">
     <button class="ac-btn active" id="btn-dr400" onclick="selectAC('dr400')">
-      <div class="reg">F-GORP</div>
-      <div class="nam">DR400-120 ROTAX</div>
-      <div class="sub">Robin Aircraft · Rotax 912 · 4 places</div>
+      <div class="ac-reg">F-GORP</div><div class="ac-name">DR400-120 ROTAX</div>
+      <div class="ac-sub">Robin Aircraft · Rotax 912 · 4 places</div>
     </button>
     <button class="ac-btn" id="btn-ulm" onclick="selectAC('ulm')">
-      <div class="reg">F-JKJZ</div>
-      <div class="nam">Super Guépard Voyage</div>
-      <div class="sub">ULM biplace · Parachute de secours</div>
+      <div class="ac-reg">F-JKJZ</div><div class="ac-name">Super Guépard Voyage</div>
+      <div class="ac-sub">ULM biplace · Parachute de secours</div>
     </button>
   </div>
 
-  <!-- Progress -->
-  <div class="prog-row"><span id="prog-lbl">0 / 0</span><span id="prog-pct">0%</span></div>
-  <div class="prog"><div class="prog-fill" id="prog-fill" style="width:0"></div></div>
-
-  <div class="cl-layout">
-    <!-- Left: checklist -->
-    <div>
-      <div class="ph-tabs" id="ph-tabs"></div>
-      <div id="cl-content"></div>
-      <button class="reset-btn" onclick="resetAll()">↺ Réinitialiser</button>
+  <!-- RTDB full-width -->
+  <div class="rtdb">
+    <div class="rtdb-hdr">
+      <span class="rtdb-title">🎛 Tableau de bord</span>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span class="rtdb-id" id="rtdb-id">F-GORP</span>
+        <div id="hm-wrap" style="display:none;align-items:center;gap:.4rem;">
+          <span style="font-size:.57rem;color:#334155;text-transform:uppercase;letter-spacing:.06em">Horamètre</span>
+          <div class="hm-box" id="hm">00:00:00</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Right: RTDB -->
-    <div class="rtdb" id="rtdb">
-      <div class="rtdb-title">
-        <span>🎛️ TABLEAU DE BORD</span>
-        <span class="rtdb-id" id="rtdb-id">F-GORP</span>
+    <div class="gauges-row">
+      <div class="gw"><canvas id="c-rpm" width="96" height="96"></canvas><div class="gl">RPM</div></div>
+      <div class="gw"><canvas id="c-spd" width="82" height="82"></canvas><div class="gl">Badin km/h</div></div>
+      <div class="gw"><canvas id="c-alt" width="74" height="74"></canvas><div class="gl">Alti ft</div></div>
+      <div class="gw"><canvas id="c-oil" width="70" height="70"></canvas><div class="gl">Huile °C</div></div>
+      <div class="gw">
+        <div class="fuel-tube"><div class="fuel-fill" id="fuel-fill" style="height:100%"></div></div>
+        <div class="gl">Carbu</div>
+      </div>
+    </div>
+
+    <!-- All controls, always visible -->
+    <div class="ctrl-panel">
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Clé contact</div>
+        <div class="key-slot" id="ks" onclick="insertKey()">🔒</div>
+        <div class="ctrl-sub" id="ks-sub">Insérer</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Porte</div>
+        <div class="door" id="door-el" onclick="toggleDoor()">🚪</div>
+        <div class="ctrl-sub" id="door-sub">Ouverte</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Frein park</div>
+        <div class="pbrake" id="pb-el" onclick="toggleBrake()">○</div>
+        <div class="ctrl-sub" id="brake-sub">Relâché</div>
       </div>
 
-      <!-- Gauges row -->
-      <div class="gauges-row">
-        <div class="gw"><canvas id="c-rpm" width="88" height="88"></canvas><div class="gl">Tachy RPM</div></div>
-        <div class="gw"><canvas id="c-spd" width="78" height="78"></canvas><div class="gl">Badin km/h</div></div>
-        <div class="gw"><canvas id="c-alt" width="72" height="72"></canvas><div class="gl">Alti ft</div></div>
-        <div class="gw"><canvas id="c-oil" width="68" height="68"></canvas><div class="gl">Huile °C</div></div>
-        <div class="gw">
-          <div class="fuel-tube-wrap" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;">
-            <div class="fuel-tube" id="fuel-tube"><div class="fuel-fill" id="fuel-fill" style="height:100%"></div></div>
-            <div style="font-size:.55rem;color:#475569;text-transform:uppercase;letter-spacing:.04em">Carbu</div>
-          </div>
+      <div class="ctrl-sep"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Batterie</div>
+        <div class="tog" id="bat-tog" onclick="toggleBattery()"></div>
+        <div class="ctrl-sub" id="bat-sub">OFF</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Master SW</div>
+        <div class="master-sw" id="master-el" onclick="toggleMaster()">
+          <div class="lv"></div>
+          <span style="font-size:.48rem;color:#334155;margin-top:2px">MSW</span>
+        </div>
+        <div class="ctrl-sub" id="master-sub">OFF</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Robinet ess.</div>
+        <div class="fvalve" id="fv-el" onclick="toggleFuel()"><div class="fvalve-line"></div></div>
+        <div class="ctrl-sub" id="fuel-sub">Fermé</div>
+      </div>
+      <div class="ctrl-group" id="g-pin" style="display:none">
+        <div class="ctrl-lbl">Goupille para.</div>
+        <div class="pin-btn" id="pin-el" onclick="removePin()">📌</div>
+        <div class="ctrl-sub" id="pin-sub">En place</div>
+      </div>
+
+      <div class="ctrl-sep"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Lane A</div>
+        <div class="tog" id="laneA-tog" onclick="toggleLane('A')"></div>
+        <div class="ctrl-sub" id="laneA-sub">OFF</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Lane B</div>
+        <div class="tog" id="laneB-tog" onclick="toggleLane('B')"></div>
+        <div class="ctrl-sub" id="laneB-sub">OFF</div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Strobe</div>
+        <div class="tog" id="strobe-tog" onclick="toggleStrobe()"></div>
+        <div class="ctrl-sub" id="strobe-sub">OFF</div>
+      </div>
+
+      <div class="ctrl-sep"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Démarreur</div>
+        <button class="starter-btn" id="starter-el"
+          onmousedown="startPress()" onmouseup="startRelease()"
+          ontouchstart="startPress()" ontouchend="startRelease()">TENIR<br>3 SEC</button>
+        <div class="ctrl-sub" id="starter-sub">Moteur OFF</div>
+      </div>
+
+      <div class="ctrl-sep"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Régime moteur</div>
+        <div class="rpm-slw">
+          <input type="range" class="rpm-sl" id="rpm-sl" min="0" max="6000" value="0" oninput="setRPM(this.value)">
+          <div class="rpm-disp" id="rpm-disp">0 RPM</div>
+        </div>
+        <div style="display:flex;gap:.3rem;margin-top:.25rem;">
+          <div class="lt-btn" id="la-off-btn" onclick="testLane('A','off')">A OFF</div>
+          <div class="lt-btn" id="la-on-btn"  onclick="testLane('A','on')">A ON</div>
+          <div class="lt-btn" id="lb-off-btn" onclick="testLane('B','off')">B OFF</div>
+          <div class="lt-btn" id="lb-on-btn"  onclick="testLane('B','on')">B ON</div>
         </div>
       </div>
 
-      <!-- Phase controls zone -->
-      <div class="ctrl-zone" id="ctrl-zone">
-        <div class="ctrl-zone-title" id="ctrl-zone-title">↑ Sélectionne une phase</div>
-        <div class="ctrl-grid" id="ctrl-grid"></div>
+      <div class="ctrl-sep"></div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Volets</div>
+        <div class="flaps-row">
+          <div class="flap-btn active" id="fl-0"  onclick="setFlaps(0)">0°</div>
+          <div class="flap-btn"        id="fl-15" onclick="setFlaps(15)">15°</div>
+          <div class="flap-btn"        id="fl-30" onclick="setFlaps(30)">30°</div>
+        </div>
+        <div class="ctrl-sub" id="flaps-sub">Rentrés</div>
       </div>
 
-      <!-- Status strip -->
-      <div class="status-strip" id="status-strip"></div>
-
-      <!-- Horamètre (toujours visible si batterie ON) -->
-      <div id="hm-wrap" style="margin-top:.6rem;display:none;align-items:center;gap:.5rem;">
-        <span style="font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:.06em">⏱ HORAMÈTRE</span>
-        <div class="hm" id="hm">00:00:00</div>
+      <div class="ctrl-group">
+        <div class="ctrl-lbl">Transpondeur</div>
+        <div>
+          <div class="xpdr-disp" id="xpdr-disp" onclick="toggleKP()">7000</div>
+          <div class="xpdr-modes">
+            <div class="xm active" id="xm-OFF" onclick="setXm('OFF')">OFF</div>
+            <div class="xm"        id="xm-GND" onclick="setXm('GND')">GND</div>
+            <div class="xm"        id="xm-ALT" onclick="setXm('ALT')">ALT</div>
+          </div>
+          <div class="xpdr-kp" id="xpdr-kp">
+            <div class="xk" onclick="xkey('1')">1</div><div class="xk" onclick="xkey('2')">2</div><div class="xk" onclick="xkey('3')">3</div>
+            <div class="xk" onclick="xkey('4')">4</div><div class="xk" onclick="xkey('5')">5</div><div class="xk" onclick="xkey('6')">6</div>
+            <div class="xk" onclick="xkey('7')">7</div><div class="xk" onclick="xkey('0')">0</div><div class="xk" onclick="xkey('back')">⌫</div>
+          </div>
+        </div>
+        <div class="ctrl-sub" id="xpdr-sub">OFF</div>
       </div>
     </div>
+
+    <div class="status-strip" id="status-strip"></div>
   </div>
+
+  <!-- Checklist -->
+  <div class="prog-row"><span id="prog-lbl">0 / 0 items</span><span id="prog-pct">0%</span></div>
+  <div class="prog"><div class="prog-fill" id="prog-fill" style="width:0"></div></div>
+  <div class="ph-tabs" id="ph-tabs"></div>
+  <div id="cl-content"></div>
+  <button class="reset-btn" onclick="resetAll()">↺ Réinitialiser</button>
 </div>
 
 <script>
-/* ══════════════════════════════════════
-   ÉTAT GLOBAL
-══════════════════════════════════════ */
-const S = {
-  ac: 'dr400',
-  keyInserted: false, doorClosed: false, parkingBrake: false,
-  batteryOn: false, fuelOn: false, masterOn: false,
-  parachutePinGone: false, strobeOn: false,
-  laneA: false, laneB: false,
-  engineRunning: false, engineStarting: false,
-  rpm: 0, oilTemp: 20, fuelLevel: 100,
-  speed: 0, altitude: 600,
-  flaps: 0,
-  xpdrMode: 'OFF', xpdrCode: '7000', xpdrEditing: false,
-  horameterStart: null,
-  laneATestOff: false, laneBTestOff: false,
-  oilTempTimer: null, startTimer: null,
-  checked: {},
+const S={ac:'dr400',keyInserted:false,doorClosed:false,parkingBrake:false,batteryOn:false,fuelOn:false,masterOn:false,parachutePinGone:false,strobeOn:false,laneA:false,laneB:false,engineRunning:false,rpm:0,oilTemp:20,fuelLevel:100,speed:0,altitude:600,flaps:0,xpdrMode:'OFF',xpdrCode:'7000',checked:{}};
+
+const AC={
+  dr400:{id:'F-GORP',rpmMax:6000,rpmTo:5200,phases:[
+    {id:'prise',label:'Prise en compte',icon:'📋',items:[
+      {a:'Carnet de route',v:'Essence / Huile / Potentiel'},{a:'Documents de bord',v:'À bord'},
+      {a:'Visite pré-vol',v:'Effectuée'},{a:'Niveau d\'huile',v:'Vérifié — trappe fermée'},
+      {a:'Caches hélice & barre',v:'Enlevés'},{a:'Verrière',v:'Tirée'},{a:'Sièges',v:'Verrouillés'},
+      {a:'Volets',v:'Rentrés'},{a:'Trim',v:'Débattement / Neutre'},
+      {a:'Portes',v:'Fermées & verrouillées',rtdb:'door'},{a:'Frein parking',v:'Serré',rtdb:'brake'},
+      {a:'Clé de contact',v:'En place',rtdb:'key',autocheck:true},
+    ]},
+    {id:'avant',label:'Avant MES',icon:'🔌',items:[
+      {a:'Batterie',v:'ON',rtdb:'battery',autocheck:true},{a:'Voyants alarmes',v:'Testés'},
+      {a:'Strobe / Anticollision',v:'ON',rtdb:'strobe',autocheck:true},{a:'Pompe essence normale',v:'ON'},
+      {a:'Lane A',v:'ON',rtdb:'laneA',autocheck:true},{a:'Lane B',v:'ON',rtdb:'laneB',autocheck:true},
+      {a:'Master Switch',v:'ON',rtdb:'master',autocheck:true},{a:'Instruments',v:'Allumés'},
+      {a:'Horamètre',v:'Noté'},
+    ]},
+    {id:'mes',label:'Mise en route',icon:'🔑',items:[
+      {a:'Abords dégagés',v:'Pieds sur freins',critical:true},{a:'Champ d\'hélice',v:'Dégagé',critical:true},
+      {a:'Robinet essence',v:'Ouvert',rtdb:'fuel',autocheck:true},
+      {a:'Démarrage moteur',v:'—',rtdb:'starter',autocheck:true,critical:true},
+      {a:'Alarmes rouges & masses',v:'Éteintes'},
+    ]},
+    {id:'roulage',label:'Roulage',icon:'🚦',items:[
+      {a:'Transpondeur',v:'GND',rtdb:'xpdr_gnd',autocheck:true,radio:{msg:[
+        {t:'p',tx:'LFBZ, F-GORP, DR400, demande roulage piste 28, information Bravo'},
+        {t:'c',tx:'F-GORP, autorisé à rouler piste 28, QNH 1013'},
+        {t:'p',tx:'Roulage 28, QNH 1013, F-GORP'}]}},
+      {a:'Phare',v:'ON'},{a:'Essais freins',v:'Vérifiés'},
+    ]},
+    {id:'ptfixe',label:'Point fixe',icon:'⚙️',items:[
+      {a:'Frein parking',v:'Serré',rtdb:'brake'},{a:'Paramètres moteur',v:'Dans le vert'},
+      {a:'Régime 4 000 RPM',v:'Atteint',rtdb:'rpm_4000'},
+      {a:'Lane A — OFF',v:'Chute RPM',rtdb:'laneA_off',critical:true},
+      {a:'Lane A — ON',v:'Retour',rtdb:'laneA_on'},
+      {a:'Lane B — OFF',v:'−250 RPM',rtdb:'laneB_off',critical:true},
+      {a:'Lane B — ON',v:'Retour',rtdb:'laneB_on'},
+      {a:'Plein gaz mini 5 200 RPM',v:'Vérifié',rtdb:'rpm_5200'},
+      {a:'Ralenti 1 400–1 900 RPM',v:'Vérifié',rtdb:'rpm_ralenti'},
+      {a:'Volets décollage',v:'Sélectionnés',rtdb:'flaps'},
+      {a:'Transpondeur',v:'ALT',rtdb:'xpdr_alt',autocheck:true,radio:{msg:[
+        {t:'i',tx:'Briefing départ (TEM) :'},
+        {t:'p',tx:'LFBZ, F-GORP, point d\'arrêt 28, prêt départ, VFR, info Bravo'},
+        {t:'c',tx:'F-GORP, autorisé décollage 28, vent 280/12kt'},
+        {t:'p',tx:'Décollage 28, F-GORP'}]}},
+    ]},
+    {id:'decol',label:'Décollage',icon:'🛫',items:[
+      {a:'Alarmes',v:'Éteintes'},{a:'Altimètre',v:'QNH réglé'},{a:'Lane A+B',v:'ON'},
+      {a:'Pompes élec.',v:'Les 2 ON'},{a:'Trim',v:'Position décollage'},
+      {a:'Commandes de vol',v:'Libres / Bon sens',critical:true},
+      {a:'Ceintures',v:'Attachées',critical:true},{a:'Verrière',v:'Verrouillée',critical:true},
+    ]},
+    {id:'att',label:'Atterrissage',icon:'🛬',items:[
+      {a:'Pompes',v:'Les 2 ON'},{a:'Lane A+B',v:'ON'},{a:'Alarmes',v:'Éteintes'},
+      {a:'Altimètre',v:'QNH recalé'},{a:'Volets',v:'1 ou 2 crans'},
+      {a:'Ceintures',v:'Serrées',critical:true},{a:'Vitesse approche',v:'110 km/h + Kve'},
+    ]},
+    {id:'arret',label:'Arrêt moteur',icon:'🔴',items:[
+      {a:'Lane A & B',v:'OFF'},{a:'Batterie',v:'OFF'},{a:'Alternateur',v:'OFF'},
+      {a:'Pompes',v:'Les 2 OFF'},{a:'Transpondeur',v:'STBY'},
+      {a:'Robinet essence',v:'Fermé'},{a:'Cales / attaches',v:'En place'},
+    ]},
+  ]},
+  ulm:{id:'F-JKJZ',rpmMax:6200,rpmTo:5500,phases:[
+    {id:'prise',label:'Prise en compte',icon:'📋',items:[
+      {a:'Carnet de route',v:'Vols / Potentiel'},{a:'Visite pré-vol',v:'Effectuée'},
+      {a:'Pitot',v:'Soufflé'},{a:'Fenêtres arrière',v:'Fermées'},{a:'Palonniers',v:'Réglés'},
+      {a:'Casques',v:'Branchés'},{a:'Sièges',v:'Réglés'},
+      {a:'Portes',v:'Fermées & verrouillées',rtdb:'door'},{a:'Frein parking',v:'Serré',rtdb:'brake'},
+      {a:'Clé batterie',v:'En place',rtdb:'key',autocheck:true},
+      {a:'Ceintures & harnais',v:'Bouclés',critical:true},
+    ]},
+    {id:'avant',label:'Avant MES',icon:'🔌',items:[
+      {a:'Batterie',v:'ON',rtdb:'battery',autocheck:true},{a:'Témoin batterie',v:'Allumé'},
+      {a:'Robinet essence',v:'Ouvert',rtdb:'fuel',autocheck:true},
+      {a:'2 Goupilles parachute',v:'Enlevées',rtdb:'pin',autocheck:true,critical:true},
+      {a:'Master Switch',v:'ON',rtdb:'master',autocheck:true},
+      {a:'Strobe',v:'ON',rtdb:'strobe',autocheck:true},
+      {a:'Lane A & B',v:'ON',rtdb:'laneA',autocheck:true},{a:'Horamètre',v:'Noté'},
+    ]},
+    {id:'mes',label:'Mise en route',icon:'🔑',items:[
+      {a:'Abords dégagés',v:'Confirmé',critical:true},{a:'Champ d\'hélice',v:'Dégagé',critical:true},
+      {a:'Démarrage moteur',v:'—',rtdb:'starter',autocheck:true,critical:true},
+      {a:'Alarmes',v:'Vérifiées'},
+    ]},
+    {id:'roulage',label:'Roulage',icon:'🚦',items:[
+      {a:'Appel radio',v:'Abords dégagés',radio:{msg:[
+        {t:'p',tx:'LFBZ, F-JKJZ, Super Guépard, demande roulage 28'},
+        {t:'c',tx:'F-JKJZ, autorisé roulage 28, QNH 1013'},
+        {t:'p',tx:'Roulage 28, F-JKJZ'}]}},
+      {a:'Essais freins',v:'OK'},{a:'Bille',v:'Vérifiée'},
+    ]},
+    {id:'ptfixe',label:'Point fixe',icon:'⚙️',items:[
+      {a:'Frein parking',v:'Serré',rtdb:'brake'},{a:'Température huile',v:'Mini 50°C',rtdb:'oil_ok'},
+      {a:'Régime 4 000 RPM',v:'Atteint',rtdb:'rpm_4000'},
+      {a:'Lane A — OFF',v:'Max 300 RPM de chute',rtdb:'laneA_off',critical:true},
+      {a:'Lane A — ON',v:'Retour',rtdb:'laneA_on'},
+      {a:'Lane B — OFF',v:'Max 115 RPM de diff.',rtdb:'laneB_off',critical:true},
+      {a:'Lane B — ON',v:'Retour',rtdb:'laneB_on'},
+      {a:'Ralenti 1 600–1 800 RPM',v:'Vérifié',rtdb:'rpm_ralenti'},
+      {a:'Volets décollage',v:'Sélectionnés',rtdb:'flaps'},
+      {a:'Transpondeur',v:'ALT',rtdb:'xpdr_alt',autocheck:true,radio:{msg:[
+        {t:'i',tx:'Briefing départ :'},{t:'p',tx:'LFBZ, F-JKJZ, point d\'arrêt 28, prêt départ, VFR'},
+        {t:'c',tx:'F-JKJZ, autorisé décollage 28'},{t:'p',tx:'Décollage 28, F-JKJZ'}]}},
+    ]},
+    {id:'decol',label:'Décollage',icon:'🛫',items:[
+      {a:'Frein parking',v:'Serré'},{a:'Trim',v:'Décollage'},
+      {a:'Commandes de vol',v:'Libres / Bon sens',critical:true},
+      {a:'Volets',v:'Position décollage'},{a:'Goupille parachute',v:'Enlevée',critical:true},
+    ]},
+    {id:'att',label:'Atterrissage',icon:'🛬',items:[
+      {a:'Volets',v:'Plein sortis'},{a:'Vitesse approche',v:'80 km/h face au vent'},
+      {a:'Ceintures',v:'Attachées',critical:true},{a:'Finale',v:'80 km/h — 1 cran'},
+    ]},
+    {id:'arret',label:'Arrêt moteur',icon:'🔴',items:[
+      {a:'Lane A & B',v:'OFF'},{a:'Clé batterie',v:'OFF'},
+      {a:'Goupille parachute',v:'En place'},{a:'Robinet essence',v:'Fermé'},
+    ]},
+  ]},
 };
 
-/* ══════════════════════════════════════
-   DONNÉES CHECKLISTS
-══════════════════════════════════════ */
-const AIRCRAFT = {
-  dr400: {
-    label: 'DR400-120 ROTAX · F-GORP', id: 'F-GORP',
-    rpmMax:6000, rpmTakeoff:5200,
-    speeds:{vr:110,vim:120,vom:140,app:110,vne:284},
-    phases:[
-      { id:'prise', label:'Prise en compte', icon:'📋', ctrl:'prise', items:[
-        {a:'Carnet de route',v:'Essence / Huile / Potentiel'},
-        {a:'Horamètre',v:'Noté'},
-        {a:'Documents',v:'À bord'},
-        {a:'Visite pré-vol',v:'Effectuée'},
-        {a:'Niveau d\'huile',v:'Vérifié & trappe fermée'},
-        {a:'Flammes & caches hélice',v:'Enlevés'},
-        {a:'Barre de manœuvre',v:'Enlevée'},
-        {a:'Ailes',v:'Dégagées'},
-        {a:'Verrière',v:'Tirée'},
-        {a:'Sièges',v:'Verrouillés'},
-        {a:'Volets',v:'Rentrés'},
-        {a:'Trim',v:'Débattement / Neutre'},
-        {a:'Portes',v:'Fermées & verrouillées',rtdb:'door'},
-        {a:'Frein de park',v:'Serré',rtdb:'brake'},
-        {a:'Contact — Clés',v:'En place',rtdb:'key',lock:true},
-      ]},
-      { id:'avant', label:'Avant MES', icon:'🔌', ctrl:'avant', items:[
-        {a:'Batterie',v:'ON',rtdb:'battery',autocheck:true},
-        {a:'Voyants alarmes',v:'Testés'},
-        {a:'Strobe / Anticollision',v:'ON',rtdb:'strobe',autocheck:true},
-        {a:'Pompe essence normale',v:'ON'},
-        {a:'Lane A',v:'ON',rtdb:'laneA',autocheck:true},
-        {a:'Lane B',v:'ON',rtdb:'laneB',autocheck:true},
-        {a:'Pression essence',v:'2,8 à 3,2 bars',rtdb:'fuel',autocheck:true},
-        {a:'Master Switch',v:'ON',rtdb:'master',autocheck:true},
-        {a:'Instruments',v:'Allumés'},
-        {a:'Horamètre',v:'Noté'},
-        {a:'Goupilles parachute',v:'En place — ULM uniquement'},
-      ]},
-      { id:'mes', label:'Mise en route', icon:'🔑', ctrl:'mes', items:[
-        {a:'Abords dégagés',v:'Pieds sur freins',critical:true},
-        {a:'Champ d\'hélice',v:'Dégagé',critical:true},
-        {a:'Robinet essence',v:'Ouvert',rtdb:'fuelvalve',autocheck:true},
-        {a:'Démarrage moteur',v:'—',rtdb:'starter',autocheck:true,critical:true},
-        {a:'Alarmes rouges & masses',v:'Éteintes'},
-      ]},
-      { id:'roulage', label:'Roulage', icon:'🚦', ctrl:'radio', items:[
-        {a:'Transpondeur',v:'GND',rtdb:'xpdr_gnd',autocheck:true,
-          radio:{msg:[
-            {t:'p',tx:'LFBZ, F-GORP, bonjour, DR400, stationnement Echo, demande roulage piste 28, VFR, information Bravo'},
-            {t:'c',tx:'F-GORP, bonjour, autorisé à rouler piste 28, via voie de circulation Alpha, QNH 1013'},
-            {t:'p',tx:'Roulage piste 28 via Alpha, QNH 1013, F-GORP'}
-          ]}},
-        {a:'Phare',v:'ON'},
-        {a:'Essais freins',v:'Vérifiés'},
-      ]},
-      { id:'ptfixe', label:'Point fixe', icon:'⚙️', ctrl:'ptfixe', items:[
-        {a:'Frein de park',v:'Serré',rtdb:'brake'},
-        {a:'Paramètres moteur',v:'Dans le vert'},
-        {a:'Régime',v:'4 000 RPM',rtdb:'rpm_4000'},
-        {a:'Lane A — OFF',v:'POWER ↓ (chute)',rtdb:'laneA_off',critical:true},
-        {a:'Lane A — ON',v:'ECO Max',rtdb:'laneA_on'},
-        {a:'Lane B — OFF',v:'POWER −250 RPM',rtdb:'laneB_off',critical:true},
-        {a:'Lane B — ON',v:'ECO RPM',rtdb:'laneB_on'},
-        {a:'Essai Plein Gaz',v:'Mini 5 200 RPM',rtdb:'rpm_5200'},
-        {a:'Essai ralenti',v:'1 400–1 900 RPM',rtdb:'rpm_ralenti'},
-        {a:'Tension ECU',v:'Mini 12,7 V'},
-        {a:'Volets',v:'Position décollage',rtdb:'flaps'},
-        {a:'Transpondeur',v:'ALT',rtdb:'xpdr_alt',autocheck:true,
-          radio:{msg:[
-            {t:'i',tx:'Exemple de briefing de départ (TEM) :'},
-            {t:'p',tx:'LFBZ, F-GORP, au point d\'arrêt piste 28, prêt pour le départ, VFR vers LFBD, niveau 2500 ft, information Bravo'},
-            {t:'c',tx:'F-GORP, autorisé au décollage piste 28, vent 280°/12 nœuds, rapportez en montée initiale'},
-            {t:'p',tx:'Décollage piste 28, F-GORP'}
-          ]}},
-      ]},
-      { id:'decol', label:'Décollage', icon:'🛫', items:[
-        {a:'Alarmes',v:'Éteintes'},{a:'Altimètre',v:'QNH'},{a:'LANE A+B',v:'ON'},
-        {a:'Pompes élec',v:'Les 2 ON'},{a:'Trim',v:'Décollage'},
-        {a:'Commandes de vol',v:'Libres / Bon sens',critical:true},
-        {a:'Ceintures',v:'Attachées',critical:true},{a:'Verrière',v:'Verrouillée',critical:true},
-        {a:'5 200 RPM mini',v:'Manche dans le vent'},
-      ]},
-      { id:'att', label:'Atterrissage', icon:'🛬', items:[
-        {a:'Pompes',v:'Les 2 ON'},{a:'LANE A+B',v:'ON'},{a:'Alarmes',v:'Éteintes'},
-        {a:'Altimètre',v:'QNH recalé'},{a:'Volets',v:'1 ou 2 crans'},
-        {a:'Ceintures',v:'Serrées',critical:true},{a:'Vitesse approche',v:'110 km/h + Kve'},
-      ]},
-      { id:'arret', label:'Arrêt moteur', icon:'🔴', items:[
-        {a:'LANE A & B',v:'OFF'},{a:'Batterie',v:'OFF'},{a:'Alternateur',v:'OFF'},
-        {a:'Pompes',v:'Les 2 OFF'},{a:'Transpondeur',v:'STBY'},
-        {a:'Robinet essence',v:'Fermé'},{a:'Verrière',v:'Ouverte'},
-        {a:'Calles / attaches',v:'En place'},
-      ]},
-    ]
-  },
-  ulm: {
-    label: 'Super Guépard · F-JKJZ', id: 'F-JKJZ',
-    rpmMax:6200, rpmTakeoff:5500,
-    speeds:{vr:105,vim:105,vom:125,app:80,vfe:110,vne:180},
-    phases:[
-      { id:'prise', label:'Prise en compte', icon:'📋', ctrl:'prise', items:[
-        {a:'Carnet de route',v:'Essence / Huile / Potentiel'},
-        {a:'Visite pré-vol',v:'Effectuée'},{a:'Pitot',v:'Soufflé'},
-        {a:'Fenêtres arrière',v:'Fermées'},{a:'Sièges',v:'Réglés'},
-        {a:'Palonniers',v:'Réglés'},{a:'Casques',v:'Branchés'},
-        {a:'Portes',v:'Fermées & verrouillées',rtdb:'door'},
-        {a:'Frein de park',v:'Serré',rtdb:'brake'},
-        {a:'Clé batterie',v:'En place',rtdb:'key',lock:true},
-        {a:'Ceintures & harnais',v:'Réglés — bouclés',critical:true},
-      ]},
-      { id:'avant', label:'Avant MES', icon:'🔌', ctrl:'avant_ulm', items:[
-        {a:'Barre de manœuvre',v:'Enlevée'},
-        {a:'Batterie',v:'ON',rtdb:'battery',autocheck:true},
-        {a:'Témoin batterie',v:'Allumé'},
-        {a:'Robinet essence',v:'Ouvert',rtdb:'fuelvalve',autocheck:true},
-        {a:'2 Goupilles parachute',v:'Enlevées',rtdb:'pin',autocheck:true,critical:true},
-        {a:'Master Switch',v:'ON',rtdb:'master',autocheck:true},
-        {a:'Strobe',v:'ON',rtdb:'strobe',autocheck:true},
-        {a:'Lane A & B',v:'ON',rtdb:'laneA',autocheck:true},
-        {a:'Horamètre',v:'Noté'},
-      ]},
-      { id:'mes', label:'Mise en route', icon:'🔑', ctrl:'mes', items:[
-        {a:'Sécurité — abords dégagés',v:'Confirmé',critical:true},
-        {a:'Champ d\'hélice',v:'Dégagé',critical:true},
-        {a:'Démarrage moteur',v:'—',rtdb:'starter',autocheck:true,critical:true},
-        {a:'Alarmes',v:'Vérifiées'},
-      ]},
-      { id:'roulage', label:'Roulage', icon:'🚦', ctrl:'radio', items:[
-        {a:'Appel radio',v:'Abords dégagés',
-          radio:{msg:[
-            {t:'p',tx:'LFBZ, F-JKJZ, Super Guépard, demande roulage piste 28'},
-            {t:'c',tx:'F-JKJZ, autorisé à rouler piste 28, QNH 1013'},
-            {t:'p',tx:'Roulage 28, F-JKJZ'}
-          ]}},
-        {a:'Essais freins',v:'OK'},{a:'Bille',v:'Vérifiée'},
-      ]},
-      { id:'ptfixe', label:'Point fixe', icon:'⚙️', ctrl:'ptfixe', items:[
-        {a:'Frein de park',v:'Serré',rtdb:'brake'},
-        {a:'Température huile',v:'Mini 50°C',rtdb:'oil_ok'},
-        {a:'Température CHT',v:'Mini 70°C'},
-        {a:'Régime',v:'4 000 RPM',rtdb:'rpm_4000'},
-        {a:'Lane A — OFF',v:'Chute max 300 RPM',rtdb:'laneA_off',critical:true},
-        {a:'Lane A — ON',v:'Retour normal',rtdb:'laneA_on'},
-        {a:'Lane B — OFF',v:'Diff. max 115 RPM',rtdb:'laneB_off',critical:true},
-        {a:'Lane B — ON',v:'Retour normal',rtdb:'laneB_on'},
-        {a:'Essai ralenti',v:'1 600–1 800 RPM',rtdb:'rpm_ralenti'},
-        {a:'Volets',v:'Position décollage',rtdb:'flaps'},
-        {a:'Transpondeur',v:'ALT',rtdb:'xpdr_alt',autocheck:true,
-          radio:{msg:[
-            {t:'i',tx:'Briefing départ :'},
-            {t:'p',tx:'LFBZ, F-JKJZ, au point d\'arrêt piste 28, prêt au départ, VFR local, information Bravo'},
-            {t:'c',tx:'F-JKJZ, autorisé au décollage piste 28, vent 270°/10 nœuds'},
-            {t:'p',tx:'Décollage 28, F-JKJZ'}
-          ]}},
-      ]},
-      { id:'decol', label:'Décollage', icon:'🛫', items:[
-        {a:'Frein de park',v:'Serré'},{a:'Trim',v:'Position décollage'},
-        {a:'Commandes de vol',v:'Libres / Bon sens',critical:true},
-        {a:'Volets',v:'Plein sortis puis décollage'},
-        {a:'Transpondeur',v:'ALT'},{a:'Goupille parachute',v:'Enlevée',critical:true},
-      ]},
-      { id:'att', label:'Atterrissage', icon:'🛬', items:[
-        {a:'Volets',v:'Plein sortis'},{a:'Vitesse approche',v:'80 km/h face au vent'},
-        {a:'Ceintures / Harnais',v:'Attachés',critical:true},{a:'Finale',v:'80 km/h — 1 cran'},
-      ]},
-      { id:'arret', label:'Arrêt moteur', icon:'🔴', items:[
-        {a:'Lane A & B',v:'OFF'},{a:'Clé batterie',v:'OFF'},
-        {a:'Goupille parachute',v:'En place'},{a:'Robinet essence',v:'Fermé'},
-      ]},
-    ]
-  }
-};
-
-/* ══════════════════════════════════════
-   CANVAS GAUGE
-══════════════════════════════════════ */
-function drawGauge(id, {value,min,max,unit,color,redFrom,displayVal,needleColor}) {
-  const c = document.getElementById(id); if(!c) return;
-  const ctx=c.getContext('2d'), S=c.width, cx=S/2, cy=S/2, r=S/2-3;
-  ctx.clearRect(0,0,S,S);
-  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='#050d18'; ctx.fill();
-  ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=2; ctx.stroke();
-  const sa=Math.PI*.75, ea=Math.PI*2.25;
-  ctx.beginPath(); ctx.arc(cx,cy,r-7,sa,ea);
-  ctx.strokeStyle='#1a2f50'; ctx.lineWidth=5; ctx.stroke();
-  if(redFrom!=null){
-    const rp=(redFrom-min)/(max-min), ra=sa+rp*(ea-sa);
-    ctx.beginPath(); ctx.arc(cx,cy,r-7,ra,ea);
-    ctx.strokeStyle='rgba(127,29,29,.8)'; ctx.lineWidth=5; ctx.stroke();
-  }
+/* Gauges */
+function drawGauge(id,{value,min,max,unit,color,redFrom}){
+  const c=document.getElementById(id);if(!c)return;
+  const ctx=c.getContext('2d'),W=c.width,cx=W/2,cy=W/2,r=W/2-3;
+  ctx.clearRect(0,0,W,W);
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#050d18';ctx.fill();
+  ctx.strokeStyle='#1a2a45';ctx.lineWidth=1.5;ctx.stroke();
+  const sa=Math.PI*.75,ea=Math.PI*2.25;
+  ctx.beginPath();ctx.arc(cx,cy,r-6,sa,ea);ctx.strokeStyle='#1a2a45';ctx.lineWidth=5;ctx.stroke();
+  if(redFrom!=null){const ra=sa+(redFrom-min)/(max-min)*(ea-sa);ctx.beginPath();ctx.arc(cx,cy,r-6,ra,ea);ctx.strokeStyle='rgba(127,29,29,.7)';ctx.lineWidth=5;ctx.stroke();}
   const pct=Math.max(0,Math.min(1,(value-min)/(max-min)));
-  if(pct>0){
-    ctx.beginPath(); ctx.arc(cx,cy,r-7,sa,sa+pct*(ea-sa));
-    ctx.strokeStyle=color||'#f59e0b'; ctx.lineWidth=5; ctx.stroke();
-  }
+  if(pct>0){ctx.beginPath();ctx.arc(cx,cy,r-6,sa,sa+pct*(ea-sa));ctx.strokeStyle=color||'#f59e0b';ctx.lineWidth=5;ctx.stroke();}
   const na=sa+pct*(ea-sa);
-  ctx.save(); ctx.translate(cx,cy); ctx.rotate(na);
-  ctx.beginPath(); ctx.moveTo(0,3); ctx.lineTo(r-11,0); ctx.lineTo(0,-3);
-  ctx.closePath(); ctx.fillStyle=needleColor||color||'#f59e0b'; ctx.fill();
-  ctx.restore();
-  ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2);
-  ctx.fillStyle=needleColor||color||'#f59e0b'; ctx.fill();
-  const dv = displayVal!=null?displayVal:Math.round(value);
-  ctx.fillStyle='#e2e8f0'; ctx.font=`bold ${Math.round(S*.14)}px Consolas,monospace`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(dv, cx, cy+r*.32);
-  ctx.fillStyle='#475569'; ctx.font=`${Math.round(S*.09)}px 'Segoe UI',sans-serif`;
-  ctx.fillText(unit||'', cx, cy+r*.52);
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(na);ctx.beginPath();ctx.moveTo(0,2.5);ctx.lineTo(r-9,0);ctx.lineTo(0,-2.5);ctx.closePath();ctx.fillStyle=color||'#f59e0b';ctx.fill();ctx.restore();
+  ctx.beginPath();ctx.arc(cx,cy,3.5,0,Math.PI*2);ctx.fillStyle=color||'#f59e0b';ctx.fill();
+  ctx.fillStyle='#e2e8f0';ctx.font=`600 ${Math.round(W*.13)}px Inter,system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  const disp=value>=1000?(value/1000).toFixed(1)+'k':Math.round(value);
+  ctx.fillText(disp,cx,cy+r*.3);
+  ctx.fillStyle='#334155';ctx.font=`${Math.round(W*.09)}px Inter,system-ui,sans-serif`;ctx.fillText(unit||'',cx,cy+r*.52);
 }
 
 function redrawAll(){
-  const ac=AIRCRAFT[S.ac];
-  drawGauge('c-rpm',{value:S.rpm,min:0,max:ac.rpmMax,unit:'RPM',
-    color:S.rpm>ac.rpmTakeoff*.95?'#22c55e':'#f59e0b',redFrom:ac.rpmMax*.97,
-    displayVal:S.rpm>=1000?(S.rpm/1000).toFixed(1)+'k':S.rpm,needleColor:'#f59e0b'});
-  drawGauge('c-spd',{value:S.speed,min:0,max:ac.speeds.vne,unit:'km/h',color:'#3b82f6',
-    redFrom:ac.speeds.vne*.9,displayVal:Math.round(S.speed)});
-  drawGauge('c-alt',{value:S.altitude,min:0,max:10000,unit:'ft',color:'#a78bfa',
-    displayVal:S.altitude>=1000?(S.altitude/1000).toFixed(1)+'k':S.altitude});
-  drawGauge('c-oil',{value:S.oilTemp,min:0,max:130,unit:'°C',
-    color:S.oilTemp<50?'#64748b':S.oilTemp<100?'#22c55e':'#ef4444',redFrom:110,
-    displayVal:Math.round(S.oilTemp)});
-  const ft=document.getElementById('fuel-fill');
-  const fl=document.getElementById('fuel-tube');
-  if(ft){ ft.style.height=S.fuelLevel+'%'; ft.className='fuel-fill'+(S.fuelLevel<25?' low':''); }
-
-  // Status strip
+  const ac=AC[S.ac];
+  drawGauge('c-rpm',{value:S.rpm,min:0,max:ac.rpmMax,unit:'RPM',color:S.rpm>ac.rpmTo*.95?'#22c55e':'#f59e0b',redFrom:ac.rpmMax*.97});
+  drawGauge('c-spd',{value:S.speed,min:0,max:300,unit:'km/h',color:'#3b82f6',redFrom:270});
+  drawGauge('c-alt',{value:S.altitude,min:0,max:10000,unit:'ft',color:'#a78bfa'});
+  drawGauge('c-oil',{value:S.oilTemp,min:0,max:130,unit:'°C',color:S.oilTemp<50?'#475569':S.oilTemp<100?'#22c55e':'#ef4444',redFrom:110});
+  const ff=document.getElementById('fuel-fill');
+  if(ff){ff.style.height=S.fuelLevel+'%';ff.className='fuel-fill'+(S.fuelLevel<25?' low':'');}
+  const sl=document.getElementById('rpm-sl');
+  if(sl) sl.style.background=`linear-gradient(to right,#f59e0b ${S.rpm/ac.rpmMax*100}%,#1e3355 ${S.rpm/ac.rpmMax*100}%)`;
   const strip=document.getElementById('status-strip');
-  strip.innerHTML=[
-    ['BAT',  S.batteryOn,   false],
-    ['MASTER',S.masterOn,   false],
-    ['FUEL', S.fuelOn,      false],
-    ['LANE A',S.laneA,      false],
-    ['LANE B',S.laneB,      false],
-    ['STROBE',S.strobeOn,   true],
-    [`XPDR ${S.xpdrCode}`, S.xpdrMode==='ALT', S.xpdrMode==='GND'],
-    ['ENG',  S.engineRunning,false],
-  ].map(([lbl,on,warn])=>`<span class="sp ${warn?'warn':on?'on':'off'}">${lbl}</span>`).join('');
-
-  // Horamètre
-  const hm=document.getElementById('hm-wrap');
-  hm.style.display=S.batteryOn?'flex':'none';
+  if(strip) strip.innerHTML=[
+    ['BAT',S.batteryOn,false],['MASTER',S.masterOn,false],['ESS.',S.fuelOn,false],
+    ['LANE A',S.laneA,false],['LANE B',S.laneB,false],['STROBE',S.strobeOn,true],
+    ['ENG',S.engineRunning,false],[`XPDR ${S.xpdrCode}`,S.xpdrMode==='ALT',S.xpdrMode==='GND'],
+  ].map(([l,on,warn])=>`<span class="sp ${warn?'warn':on?'on':'off'}">${l}</span>`).join('');
 }
 
-/* ══════════════════════════════════════
-   HORAMÈTRE
-══════════════════════════════════════ */
-let hmInterval=null;
-function startHM(){ if(hmInterval) return; S.horameterStart=Date.now(); hmInterval=setInterval(updateHM,1000); }
-function updateHM(){
-  const el=document.getElementById('hm'); if(!el) return;
-  const secs=Math.floor((Date.now()-S.horameterStart)/1000);
-  const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
-  el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-function stopHM(){ clearInterval(hmInterval); hmInterval=null; S.horameterStart=null; document.getElementById('hm').textContent='00:00:00'; }
+/* Horamètre */
+let hmInt=null;
+function startHM(){if(hmInt)return;S.hmStart=Date.now();document.getElementById('hm-wrap').style.display='flex';hmInt=setInterval(()=>{const s=Math.floor((Date.now()-S.hmStart)/1000);document.getElementById('hm').textContent=`${p2(Math.floor(s/3600))}:${p2(Math.floor((s%3600)/60))}:${p2(s%60)}`;},1000);}
+function stopHM(){clearInterval(hmInt);hmInt=null;document.getElementById('hm').textContent='00:00:00';document.getElementById('hm-wrap').style.display='none';}
+function p2(n){return String(n).padStart(2,'0');}
 
-/* ══════════════════════════════════════
-   OIL TEMP AUTO-RISE
-══════════════════════════════════════ */
-function startOilHeating(){
-  if(S.oilTempTimer) return;
-  S.oilTempTimer=setInterval(()=>{
-    if(S.oilTemp<58){ S.oilTemp=Math.min(58, S.oilTemp+.5); redrawAll(); }
-    else clearInterval(S.oilTempTimer);
-  }, 1200);
-}
+/* Oil heating */
+let oilInt=null;
+function startOil(){if(oilInt)return;oilInt=setInterval(()=>{if(S.oilTemp<60){S.oilTemp=Math.min(60,S.oilTemp+.4);redrawAll();}else clearInterval(oilInt);},1200);}
 
-/* ══════════════════════════════════════
-   RTDB CONTROLS — RENDER
-══════════════════════════════════════ */
-function renderCtrl(ctrl){
-  const z=document.getElementById('ctrl-zone');
-  const g=document.getElementById('ctrl-grid');
-  const t=document.getElementById('ctrl-zone-title');
-  let title='', html='';
+/* Controls */
+function insertKey(){if(S.keyInserted)return;S.keyInserted=true;document.getElementById('ks').classList.add('on');document.getElementById('ks').textContent='🔑';document.getElementById('ks-sub').textContent='Insérée';autoCheck('key');toast('🔑 Clé insérée');}
+function toggleDoor(){S.doorClosed=!S.doorClosed;const el=document.getElementById('door-el');el.classList.toggle('on',S.doorClosed);el.textContent=S.doorClosed?'🔒':'🚪';document.getElementById('door-sub').textContent=S.doorClosed?'Fermée':'Ouverte';if(S.doorClosed)autoCheck('door');}
+function toggleBrake(){S.parkingBrake=!S.parkingBrake;const el=document.getElementById('pb-el');el.classList.toggle('on',S.parkingBrake);el.textContent=S.parkingBrake?'🅿':'○';document.getElementById('brake-sub').textContent=S.parkingBrake?'Serré':'Relâché';if(S.parkingBrake)autoCheck('brake');}
+function toggleBattery(){if(!S.keyInserted){toast('⚠ Insérez d\'abord la clé','warn');return;}S.batteryOn=!S.batteryOn;document.getElementById('bat-tog').classList.toggle('on',S.batteryOn);document.getElementById('bat-sub').textContent=S.batteryOn?'ON':'OFF';if(S.batteryOn)startHM();else stopHM();autoCheck('battery');redrawAll();}
+function toggleMaster(){if(!S.batteryOn){toast('⚠ Batterie OFF','warn');return;}S.masterOn=!S.masterOn;const el=document.getElementById('master-el');el.classList.toggle('on',S.masterOn);el.querySelector('.lv').style.cssText=S.masterOn?'background:#22c55e;transform:rotate(-30deg)':'';document.getElementById('master-sub').textContent=S.masterOn?'ON':'OFF';autoCheck('master');redrawAll();}
+function toggleFuel(){S.fuelOn=!S.fuelOn;document.getElementById('fv-el').classList.toggle('on',S.fuelOn);document.getElementById('fuel-sub').textContent=S.fuelOn?'Ouvert':'Fermé';autoCheck('fuel');redrawAll();}
+function removePin(){if(S.parachutePinGone)return;S.parachutePinGone=true;const el=document.getElementById('pin-el');el.classList.add('on');el.textContent='✓';document.getElementById('pin-sub').textContent='Enlevée';autoCheck('pin');}
+function toggleLane(l){if(l==='A'){S.laneA=!S.laneA;document.getElementById('laneA-tog').classList.toggle('on',S.laneA);document.getElementById('laneA-sub').textContent=S.laneA?'ON':'OFF';autoCheck('laneA');}else{S.laneB=!S.laneB;document.getElementById('laneB-tog').classList.toggle('on',S.laneB);document.getElementById('laneB-sub').textContent=S.laneB?'ON':'OFF';autoCheck('laneB');}redrawAll();}
+function toggleStrobe(){S.strobeOn=!S.strobeOn;document.getElementById('strobe-tog').classList.toggle('on',S.strobeOn);document.getElementById('strobe-sub').textContent=S.strobeOn?'ON':'OFF';autoCheck('strobe');redrawAll();}
 
-  if(ctrl==='prise'){
-    title='Phase — Prise en compte';
-    html=`
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Clé de contact</div>
-        <div class="key-slot ${S.keyInserted?'on':''}" id="ks" onclick="insertKey()" title="Insérer la clé">
-          ${S.keyInserted?'🔑':'🔒'}
-        </div>
-        <div class="ctrl-state">${S.keyInserted?'✓ Insérée':'Cliquer pour insérer'}</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Porte</div>
-        <div class="door ${S.doorClosed?'closed':''}" id="door-el" onclick="toggleDoor()" title="Fermer la porte">
-          ${S.doorClosed?'🔒':'🚪'}
-        </div>
-        <div class="ctrl-state">${S.doorClosed?'✓ Fermée':'Ouverte — cliquer'}</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Frein park</div>
-        <div class="pbrake ${S.parkingBrake?'on':''}" id="pb-el" onclick="toggleBrake()" title="Frein parking">
-          ${S.parkingBrake?'🅿':'○'}
-        </div>
-        <div class="ctrl-state">${S.parkingBrake?'✓ Serré':'Relâché — cliquer'}</div>
-      </div>`;
-  }
-  else if(ctrl==='avant'||ctrl==='avant_ulm'){
-    title='Phase — Avant mise en route';
-    const showPin = S.ac==='ulm';
-    html=`
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Batterie</div>
-        <div class="tog ${S.batteryOn?'on':''}" id="bat-tog" onclick="toggleBattery()" title="Batterie ON/OFF"></div>
-        <div class="ctrl-state" id="bat-state">${S.batteryOn?'✓ ON':'OFF'}</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Master SW</div>
-        <div class="master ${S.masterOn?'on':''}" id="master-el" onclick="toggleMaster()" title="Master Switch">
-          <div class="mlev"></div><div style="font-size:.55rem;color:${S.masterOn?'#22c55e':'#475569'}">MSW</div>
-        </div>
-        <div class="ctrl-state">${S.masterOn?'✓ ON':'OFF'}</div>
-      </div>
-      ${showPin?`
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Goupille Para.</div>
-        <div class="pin-btn ${S.parachutePinGone?'gone':''}" id="pin-el" onclick="removePin()" title="Enlever goupille">
-          ${S.parachutePinGone?'✓':'📌'}
-        </div>
-        <div class="ctrl-state">${S.parachutePinGone?'✓ Enlevée':'Cliquer'}</div>
-      </div>`:''}
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Lane A</div>
-        <div class="tog ${S.laneA?'on':''}" id="laneA-tog" onclick="toggleLane('A')" title="Lane A"></div>
-        <div class="ctrl-state">${S.laneA?'✓ ON':'OFF'}</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Lane B</div>
-        <div class="tog ${S.laneB?'on':''}" id="laneB-tog" onclick="toggleLane('B')" title="Lane B"></div>
-        <div class="ctrl-state">${S.laneB?'✓ ON':'OFF'}</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Strobe</div>
-        <div class="tog ${S.strobeOn?'on':''}" id="strobe-tog" onclick="toggleStrobe()" title="Strobe"></div>
-        <div class="ctrl-state">${S.strobeOn?'✓ ON':'OFF'}</div>
-      </div>`;
-  }
-  else if(ctrl==='mes'){
-    title='Phase — Mise en route';
-    html=`
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Robinet essence</div>
-        <div class="fvalve ${S.fuelOn?'on':''}" id="fv-el" onclick="toggleFuel()" title="Robinet essence">
-          <div class="fvalve-line"></div>
-        </div>
-        <div class="ctrl-state">${S.fuelOn?'✓ Ouvert':'Fermé — tourner'}</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Démarreur</div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;">
-          <button class="starter-btn ${S.engineRunning?'ok':''}" id="starter-el"
-            onmousedown="startEnginePress()" onmouseup="startEngineRelease()"
-            ontouchstart="startEnginePress()" ontouchend="startEngineRelease()">
-            ${S.engineRunning?'✓ ON':'TENIR\nAPPUYÉ'}
-          </button>
-          <div class="ctrl-state" id="starter-msg">${S.engineRunning?'Moteur en marche':!S.batteryOn?'⚠ Batterie OFF':!S.fuelOn?'⚠ Essence fermée':'Tenir appuyé 3 sec'}</div>
-        </div>
-      </div>`;
-  }
-  else if(ctrl==='radio'){
-    title='Phase — Radio & roulage';
-    html=`<div style="font-size:.78rem;color:#64748b;line-height:1.6">
-      📻 Les encarts radio sont dépliables dans la checklist ci-contre.<br>
-      <span style="color:#22c55e;font-size:.7rem">Ouvre l'encart sous l'item "Appel radio" ou "Transpondeur".</span>
-    </div>`;
-  }
-  else if(ctrl==='ptfixe'){
-    title='Phase — Point fixe';
-    html=`
-      <div class="ctrl-g" style="width:100%">
-        <div class="ctrl-lbl">Régime moteur</div>
-        <div class="rpm-slw">
-          <input type="range" class="rpm-sl" id="rpm-sl" min="0" max="${AIRCRAFT[S.ac].rpmMax}"
-            value="${Math.round(S.rpm)}" oninput="setRPMSlider(this.value)">
-          <div class="rpm-disp" id="rpm-disp-sl">${Math.round(S.rpm)} RPM</div>
-        </div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Lane A test</div>
-        <div class="lane-test">
-          <div class="lt-btn ${S.laneATestOff?'off-state':''}" onclick="testLane('A','off')" id="la-off-btn">LANE A OFF</div>
-          <div class="lt-btn" onclick="testLane('A','on')" id="la-on-btn">LANE A ON</div>
-        </div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Lane B test</div>
-        <div class="lane-test">
-          <div class="lt-btn ${S.laneBTestOff?'off-state':''}" onclick="testLane('B','off')" id="lb-off-btn">LANE B OFF</div>
-          <div class="lt-btn" onclick="testLane('B','on')" id="lb-on-btn">LANE B ON</div>
-        </div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Volets</div>
-        <div class="flaps-row">
-          <div class="flap-btn ${S.flaps===0?'active':''}" onclick="setFlaps(0)">0°</div>
-          <div class="flap-btn ${S.flaps===15?'active':''}" onclick="setFlaps(15)">15°</div>
-          <div class="flap-btn ${S.flaps===30?'active':''}" onclick="setFlaps(30)">30°</div>
-        </div>
-        <div class="ctrl-state">${S.flaps}° sortis</div>
-      </div>
-      <div class="ctrl-g">
-        <div class="ctrl-lbl">Transpondeur</div>
-        <div>
-          <div class="xpdr-disp" onclick="toggleXpdrKP()" id="xpdr-disp">${S.xpdrCode}</div>
-          <div class="xpdr-modes">
-            <div class="xm-btn ${S.xpdrMode==='OFF'?'active':''}" onclick="setXpdrMode('OFF')">OFF</div>
-            <div class="xm-btn ${S.xpdrMode==='GND'?'active':''}" onclick="setXpdrMode('GND')">GND</div>
-            <div class="xm-btn ${S.xpdrMode==='ALT'?'active':''}" onclick="setXpdrMode('ALT')">ALT</div>
-          </div>
-          <div class="xpdr-kp" id="xpdr-kp">
-            ${[1,2,3,4,5,6,7,0,'←','✓'].map(k=>`<div class="xk" onclick="xpdrKey('${k}')">${k}</div>`).join('')}
-          </div>
-        </div>
-      </div>`;
-  }
-  else {
-    title='Instruments'; html='<div style="color:#475569;font-size:.78rem;text-align:center">Instruments actifs</div>';
-  }
-
-  t.textContent=title; g.innerHTML=html;
-
-  // RPM slider color update
-  const sl=document.getElementById('rpm-sl');
-  if(sl) sl.style.setProperty('--pct', (S.rpm/AIRCRAFT[S.ac].rpmMax*100)+'%');
-}
-
-/* ══════════════════════════════════════
-   ACTIONS RTDB
-══════════════════════════════════════ */
-function insertKey(){
-  S.keyInserted=true;
-  renderCtrl(currentPhaseCtrl());
-  autoCheckByRtdb('key');
-  showToast('🔑 Clé insérée');
-}
-function toggleDoor(){
-  S.doorClosed=!S.doorClosed;
-  renderCtrl(currentPhaseCtrl());
-  if(S.doorClosed) autoCheckByRtdb('door');
-}
-function toggleBrake(){
-  S.parkingBrake=!S.parkingBrake;
-  renderCtrl(currentPhaseCtrl());
-  if(S.parkingBrake) autoCheckByRtdb('brake');
-}
-function toggleBattery(){
-  if(!S.keyInserted){ showToast('⚠️ Insérez d\'abord la clé !','warn'); return; }
-  S.batteryOn=!S.batteryOn;
-  if(S.batteryOn){ startHM(); animInstruments(); } else { stopHM(); }
-  renderCtrl(currentPhaseCtrl()); redrawAll();
-  autoCheckByRtdb('battery');
-}
-function toggleMaster(){
-  if(!S.batteryOn){ showToast('⚠️ Batterie OFF !','warn'); return; }
-  S.masterOn=!S.masterOn;
-  if(S.masterOn){ S.altitude=620; S.speed=0; redrawAll(); }
-  renderCtrl(currentPhaseCtrl()); autoCheckByRtdb('master');
-}
-function toggleFuel(){
-  S.fuelOn=!S.fuelOn;
-  renderCtrl(currentPhaseCtrl()); redrawAll();
-  autoCheckByRtdb('fuelvalve');
-}
-function toggleLane(lane){
-  if(lane==='A'){ S.laneA=!S.laneA; autoCheckByRtdb('laneA'); }
-  else           { S.laneB=!S.laneB; autoCheckByRtdb('laneB'); }
-  renderCtrl(currentPhaseCtrl()); redrawAll();
-}
-function toggleStrobe(){
-  S.strobeOn=!S.strobeOn;
-  renderCtrl(currentPhaseCtrl()); redrawAll();
-  autoCheckByRtdb('strobe');
-}
-function removePin(){
-  if(S.parachutePinGone) return;
-  S.parachutePinGone=true;
-  renderCtrl(currentPhaseCtrl()); autoCheckByRtdb('pin');
-}
-
-let starterTimeout=null;
-function startEnginePress(){
-  if(S.engineRunning) return;
-  if(!S.batteryOn){ showToast('⚠️ Batterie OFF !','warn'); return; }
-  if(!S.fuelOn)   { showToast('⚠️ Robinet essence fermé !','warn'); return; }
-  const btn=document.getElementById('starter-el');
-  if(btn) btn.classList.add('pressing');
-  let t=0; const intv=setInterval(()=>{
-    t+=0.2; S.rpm=Math.min(1400, t/3*1400); redrawAll();
-    document.getElementById('rpm-disp-sl')?.textContent && (document.getElementById('rpm-disp-sl').textContent=Math.round(S.rpm)+' RPM');
-  },200);
-  starterTimeout=setTimeout(()=>{
-    clearInterval(intv); S.rpm=1400; S.engineRunning=true;
-    startOilHeating();
-    renderCtrl('mes'); redrawAll(); autoCheckByRtdb('starter');
-    showToast('✅ Moteur en marche !','ok');
+let _si=null,_st=null;
+function startPress(){
+  if(S.engineRunning)return;
+  if(!S.batteryOn){toast('⚠ Batterie OFF','warn');return;}
+  if(!S.fuelOn){toast('⚠ Robinet fermé','warn');return;}
+  const btn=document.getElementById('starter-el');btn.classList.add('pressing');
+  let t=0;_si=setInterval(()=>{t+=.2;S.rpm=Math.min(1400,t/3*1400);redrawAll();document.getElementById('rpm-sl').value=Math.round(S.rpm);document.getElementById('rpm-disp').textContent=Math.round(S.rpm)+' RPM';},200);
+  _st=setTimeout(()=>{
+    clearInterval(_si);S.rpm=1400;S.engineRunning=true;startOil();
+    btn.classList.remove('pressing');btn.classList.add('on');btn.innerHTML='✓ ON';
+    document.getElementById('starter-sub').textContent='En marche';
+    document.getElementById('rpm-sl').value=1400;document.getElementById('rpm-disp').textContent='1 400 RPM';
+    redrawAll();autoCheck('starter');toast('✅ Moteur en marche','ok');
   },3000);
-  S._startIntv=intv;
 }
-function startEngineRelease(){
-  clearTimeout(starterTimeout); clearInterval(S._startIntv);
-  const btn=document.getElementById('starter-el');
-  if(btn) btn.classList.remove('pressing');
-  if(!S.engineRunning){ S.rpm=0; redrawAll(); document.getElementById('starter-msg').textContent='Tenir 3 secondes entières'; }
-}
+function startRelease(){clearTimeout(_st);clearInterval(_si);document.getElementById('starter-el').classList.remove('pressing');if(!S.engineRunning){S.rpm=0;redrawAll();document.getElementById('rpm-sl').value=0;document.getElementById('rpm-disp').textContent='0 RPM';}}
 
-function setRPMSlider(val){
-  S.rpm=parseInt(val);
-  document.getElementById('rpm-disp-sl').textContent=S.rpm+' RPM';
-  const sl=document.getElementById('rpm-sl');
-  if(sl) sl.style.background=`linear-gradient(to right,#22c55e ${S.rpm/AIRCRAFT[S.ac].rpmMax*100}%,#1e3a5f ${S.rpm/AIRCRAFT[S.ac].rpmMax*100}%)`;
-  redrawAll();
-  checkRpmItems();
-}
-
+function setRPM(v){S.rpm=parseInt(v);document.getElementById('rpm-disp').textContent=S.rpm+' RPM';redrawAll();checkRpmItems();}
 function checkRpmItems(){
-  const phase=AIRCRAFT[S.ac].phases[activePhase];
-  phase.items.forEach((item,ii)=>{
-    const key=`${phase.id}-${ii}`;
-    if(item.rtdb==='rpm_4000' && S.rpm>=3900 && !S.checked[key]) doCheck(phase.id,ii,true);
-    if(item.rtdb==='rpm_5200' && S.rpm>=5200 && !S.checked[key]) doCheck(phase.id,ii,true);
-    if(item.rtdb==='rpm_ralenti' && S.rpm>=1400 && S.rpm<=1900 && !S.checked[key]) doCheck(phase.id,ii,true);
-  });
+  AC[S.ac].phases.forEach(p=>p.items.forEach((item,ii)=>{
+    const k=`${p.id}-${ii}`;
+    if(item.rtdb==='rpm_4000'    && S.rpm>=3900        && !S.checked[k]) doCheck(p.id,ii,true);
+    if(item.rtdb==='rpm_5200'    && S.rpm>=5200        && !S.checked[k]) doCheck(p.id,ii,true);
+    if(item.rtdb==='rpm_ralenti' && S.rpm>=1400&&S.rpm<=1900 && !S.checked[k]) doCheck(p.id,ii,true);
+    if(item.rtdb==='oil_ok'      && S.oilTemp>=50      && !S.checked[k]) doCheck(p.id,ii,true);
+  }));
 }
-
 function testLane(lane,action){
-  if(action==='off'){
-    if(lane==='A'){ S.laneATestOff=true; S.rpm=Math.max(0,S.rpm-280); }
-    else           { S.laneBTestOff=true; S.rpm=Math.max(0,S.rpm-250); }
-    autoCheckByRtdb(lane==='A'?'laneA_off':'laneB_off');
-  } else {
-    if(lane==='A'){ S.laneATestOff=false; S.rpm=Math.min(AIRCRAFT[S.ac].rpmMax,S.rpm+280); }
-    else           { S.laneBTestOff=false; S.rpm=Math.min(AIRCRAFT[S.ac].rpmMax,S.rpm+250); }
-    autoCheckByRtdb(lane==='A'?'laneA_on':'laneB_on');
-  }
-  renderCtrl('ptfixe'); redrawAll();
+  const delta=action==='off'?-270:270;S.rpm=Math.max(0,Math.min(AC[S.ac].rpmMax,S.rpm+delta));
+  document.getElementById('rpm-sl').value=Math.round(S.rpm);document.getElementById('rpm-disp').textContent=Math.round(S.rpm)+' RPM';
+  const off=action==='off';
+  document.getElementById(`l${lane.toLowerCase()}-off-btn`).classList.toggle('testing',off&&action==='off');
+  if(action==='on')document.getElementById(`l${lane.toLowerCase()}-off-btn`).classList.remove('testing');
+  autoCheck(`lane${lane}_${action}`);redrawAll();
+}
+function setFlaps(deg){S.flaps=deg;[0,15,30].forEach(d=>document.getElementById('fl-'+d).classList.toggle('active',d===deg));document.getElementById('flaps-sub').textContent=deg===0?'Rentrés':`${deg}° sortis`;if(deg>0)autoCheck('flaps');}
+function toggleKP(){document.getElementById('xpdr-kp').classList.toggle('open');}
+function setXm(mode){S.xpdrMode=mode;['OFF','GND','ALT'].forEach(m=>document.getElementById('xm-'+m).classList.toggle('active',m===mode));document.getElementById('xpdr-sub').textContent=`${mode} — ${S.xpdrCode}`;if(mode==='GND')autoCheck('xpdr_gnd');if(mode==='ALT')autoCheck('xpdr_alt');redrawAll();}
+function xkey(k){const d=document.getElementById('xpdr-disp');if(k==='back'){S.xpdrCode=S.xpdrCode.slice(0,-1)||'0';}else if(S.xpdrCode.length<4){S.xpdrCode+=k;}if(d)d.textContent=S.xpdrCode;document.getElementById('xpdr-sub').textContent=`${S.xpdrMode} — ${S.xpdrCode}`;}
+
+function autoCheck(rtdbKey){
+  AC[S.ac].phases.forEach(p=>p.items.forEach((item,ii)=>{
+    if(item.rtdb===rtdbKey&&item.autocheck&&!S.checked[`${p.id}-${ii}`]) doCheck(p.id,ii,true);
+  }));
 }
 
-function setFlaps(deg){
-  S.flaps=deg;
-  renderCtrl('ptfixe'); redrawAll();
-  if(deg>0) autoCheckByRtdb('flaps');
-}
-
-function setXpdrMode(mode){
-  S.xpdrMode=mode;
-  renderCtrl('ptfixe'); redrawAll();
-  if(mode==='GND') autoCheckByRtdb('xpdr_gnd');
-  if(mode==='ALT'){ autoCheckByRtdb('xpdr_alt'); }
-}
-
-function toggleXpdrKP(){
-  const kp=document.getElementById('xpdr-kp');
-  if(kp) kp.classList.toggle('open');
-}
-
-function xpdrKey(k){
-  if(k==='←'){ S.xpdrCode=S.xpdrCode.slice(0,-1)||'0'; }
-  else if(k==='✓'){ document.getElementById('xpdr-kp')?.classList.remove('open'); }
-  else if(S.xpdrCode.length<4){ S.xpdrCode+=String(k); }
-  document.getElementById('xpdr-disp').textContent=S.xpdrCode;
-}
-
-function animInstruments(){
-  let t=0;
-  const intv=setInterval(()=>{
-    t+=0.1; const sv=Math.sin(t*3);
-    S.speed=Math.max(0,sv*15); S.altitude=600+sv*10;
-    redrawAll(); if(t>2){ S.speed=0; S.altitude=620; clearInterval(intv); redrawAll(); }
-  },80);
-}
-
-/* ══════════════════════════════════════
-   AUTO-CHECK via RTDB
-══════════════════════════════════════ */
-function autoCheckByRtdb(rtdbKey){
-  const phase=AIRCRAFT[S.ac].phases[activePhase];
-  phase.items.forEach((item,ii)=>{
-    if(item.rtdb===rtdbKey && item.autocheck && !S.checked[`${phase.id}-${ii}`])
-      doCheck(phase.id,ii,true);
-  });
-  // Check all phases
-  AIRCRAFT[S.ac].phases.forEach(p=>{
-    p.items.forEach((item,ii)=>{
-      if(item.rtdb===rtdbKey && item.autocheck && !S.checked[`${p.id}-${ii}`])
-        doCheck(p.id,ii,true);
-    });
-  });
-}
-
-/* ══════════════════════════════════════
-   CHECKLIST LOGIC
-══════════════════════════════════════ */
 let activePhase=0;
-
-function currentPhaseCtrl(){
-  const p=AIRCRAFT[S.ac].phases[activePhase];
-  return p.ctrl||'default';
-}
-
-function buildUI(){
-  document.getElementById('rtdb-id').textContent=AIRCRAFT[S.ac].id;
-  const phases=AIRCRAFT[S.ac].phases;
-  // Tabs
-  document.getElementById('ph-tabs').innerHTML=phases.map((p,i)=>`
-    <button class="ph-tab ${i===activePhase?'active':''} ${phases[i].items.every((_,ii)=>S.checked[`${p.id}-${ii}`])?'done':''}"
-      onclick="switchPhase(${i})">${p.icon} ${p.label}</button>`).join('');
-  // Content
+function buildCL(){
+  const phases=AC[S.ac].phases;
+  document.getElementById('ph-tabs').innerHTML=phases.map((p,i)=>{
+    const done=p.items.every((_,ii)=>S.checked[`${p.id}-${ii}`]);
+    return `<button class="ph-tab ${i===activePhase?'active':''} ${done?'done':''}" onclick="switchPhase(${i})">${p.icon} ${p.label}</button>`;
+  }).join('');
   const phase=phases[activePhase];
   document.getElementById('cl-content').innerHTML=`
     <div class="ph-hdr">${phase.icon} ${phase.label}</div>
     ${phase.items.map((item,ii)=>{
-      const key=`${phase.id}-${ii}`;
-      const locked=item.lock && !S.keyInserted && !S.checked[key];
-      const checked=!!S.checked[key];
-      return `<label class="cl-item ${checked?'checked':''} ${item.critical?'critical':''} ${locked?'locked':''}" id="ci-${key}">
-        <input type="checkbox" ${checked?'checked':''} ${locked?'disabled':''}
-          onchange="doCheck('${phase.id}',${ii},this.checked)">
-        <span class="ia">${item.a}${locked?' 🔒':''}</span>
-        <span class="iv">${item.v}</span>
-      </label>
-      ${item.radio?radioEncart(key,item.radio):''}`;
+      const k=`${phase.id}-${ii}`,checked=!!S.checked[k];
+      return `<label class="cl-item ${checked?'checked':''} ${item.critical?'critical':''}" id="ci-${k}">
+        <input type="checkbox" ${checked?'checked':''} onchange="doCheck('${phase.id}',${ii},this.checked)">
+        <span class="ia">${item.a}</span><span class="iv">${item.v}</span>
+      </label>${item.radio?`<div class="radio-enc"><button class="radio-tog" onclick="document.getElementById('rb-${k}').classList.toggle('open')">📻 Phraséologie radio</button><div class="radio-body" id="rb-${k}">${item.radio.msg.map(m=>`<div class="rl ${m.t==='p'?'rp':m.t==='c'?'rt':'ri'}">${m.t==='p'?'👨‍✈️':m.t==='c'?'🗼':'ℹ️'} ${m.tx}</div>`).join('')}</div></div>`:''}`;
     }).join('')}
-    <div class="done-bn ${phase.items.every((_,ii)=>S.checked[`${phase.id}-${ii}`])?'show':''}" id="done-${phase.id}">
-      ✅ Phase <strong>${phase.label}</strong> terminée !
-    </div>`;
-
-  renderCtrl(currentPhaseCtrl());
+    <div class="done-bn ${phase.items.every((_,ii)=>S.checked[`${phase.id}-${ii}`])?'show':''}" id="done-${phase.id}">✓ Phase <strong>${phase.label}</strong> terminée</div>`;
   updateProgress();
-  redrawAll();
 }
-
-function radioEncart(key, radio){
-  return `<div class="radio-enc">
-    <button class="radio-tog" onclick="toggleRadio('r-${key}')">📻 Phraséologie radio — cliquer</button>
-    <div class="radio-body" id="r-${key}">
-      ${radio.msg.map(m=>`<div class="rl ${m.t==='p'?'rp':m.t==='c'?'rt':'ri'}">
-        ${m.t==='p'?'👨‍✈️':m.t==='c'?'🗼':'ℹ️'} ${m.tx}</div>`).join('')}
-    </div>
-  </div>`;
-}
-
-function toggleRadio(id){
-  document.getElementById(id)?.classList.toggle('open');
-}
-
-function switchPhase(pi){
-  activePhase=pi; buildUI();
-}
-
+function switchPhase(i){activePhase=i;buildCL();}
 function doCheck(phaseId,ii,val){
   S.checked[`${phaseId}-${ii}`]=val;
   const el=document.getElementById(`ci-${phaseId}-${ii}`);
-  if(el) el.classList.toggle('checked',val);
-  const phase=AIRCRAFT[S.ac].phases.find(p=>p.id===phaseId);
-  if(phase){
-    const allDone=phase.items.every((_,i)=>S.checked[`${phaseId}-${i}`]);
-    const bn=document.getElementById(`done-${phaseId}`);
-    if(bn) bn.classList.toggle('show',allDone);
-  }
-  updateProgress();
-  document.querySelectorAll('.ph-tab').forEach((t,i)=>{
-    const p=AIRCRAFT[S.ac].phases[i];
-    t.classList.toggle('done',p.items.every((_,ii)=>S.checked[`${p.id}-${ii}`]));
-  });
-  // Fuel level decreases slightly as phases are checked
-  const total=AIRCRAFT[S.ac].phases.reduce((a,p)=>a+p.items.length,0);
-  const done=Object.values(S.checked).filter(Boolean).length;
-  S.fuelLevel=Math.max(75,100-(done/total)*8);
-  redrawAll();
+  if(el){el.classList.toggle('checked',val);el.querySelector('input').checked=val;}
+  const p=AC[S.ac].phases.find(p=>p.id===phaseId);
+  if(p){const all=p.items.every((_,i)=>S.checked[`${phaseId}-${i}`]);document.getElementById(`done-${phaseId}`)?.classList.toggle('show',all);}
+  document.querySelectorAll('.ph-tab').forEach((t,i)=>{const p=AC[S.ac].phases[i];t.classList.toggle('done',p.items.every((_,ii)=>S.checked[`${p.id}-${ii}`]));t.classList.toggle('active',i===activePhase);});
+  const tot=AC[S.ac].phases.reduce((a,p)=>a+p.items.length,0),done=Object.values(S.checked).filter(Boolean).length;
+  S.fuelLevel=Math.max(75,100-(done/tot)*8);
+  updateProgress();redrawAll();
 }
-
 function updateProgress(){
-  let total=0,done=0;
-  AIRCRAFT[S.ac].phases.forEach(p=>p.items.forEach((_,ii)=>{total++;if(S.checked[`${p.id}-${ii}`])done++;}));
+  let total=0,done=0;AC[S.ac].phases.forEach(p=>p.items.forEach((_,ii)=>{total++;if(S.checked[`${p.id}-${ii}`])done++;}));
   const pct=total?Math.round(done/total*100):0;
   document.getElementById('prog-fill').style.width=pct+'%';
   document.getElementById('prog-lbl').textContent=`${done} / ${total} items cochés`;
@@ -956,45 +561,42 @@ function updateProgress(){
 }
 
 function selectAC(ac){
-  S.ac=ac; activePhase=0; resetState();
+  S.ac=ac;activePhase=0;resetState();
   document.getElementById('btn-dr400').classList.toggle('active',ac==='dr400');
   document.getElementById('btn-ulm').classList.toggle('active',ac==='ulm');
-  buildUI();
+  document.getElementById('rtdb-id').textContent=AC[ac].id;
+  document.getElementById('g-pin').style.display=ac==='ulm'?'flex':'none';
+  document.getElementById('rpm-sl').max=AC[ac].rpmMax;
+  buildCL();redrawAll();
 }
-
 function resetState(){
-  S.keyInserted=false; S.doorClosed=false; S.parkingBrake=false;
-  S.batteryOn=false; S.fuelOn=false; S.masterOn=false;
-  S.parachutePinGone=false; S.strobeOn=false;
-  S.laneA=false; S.laneB=false;
-  S.engineRunning=false; S.engineStarting=false;
-  S.rpm=0; S.oilTemp=20; S.fuelLevel=100;
-  S.speed=0; S.altitude=600;
-  S.flaps=0; S.xpdrMode='OFF'; S.xpdrCode='7000';
-  S.laneATestOff=false; S.laneBTestOff=false;
-  S.checked={};
-  clearInterval(S.oilTempTimer); S.oilTempTimer=null;
-  stopHM();
+  Object.assign(S,{keyInserted:false,doorClosed:false,parkingBrake:false,batteryOn:false,fuelOn:false,masterOn:false,parachutePinGone:false,strobeOn:false,laneA:false,laneB:false,engineRunning:false,rpm:0,oilTemp:20,fuelLevel:100,speed:0,altitude:600,flaps:0,xpdrMode:'OFF',xpdrCode:'7000',checked:{}});
+  clearInterval(oilInt);oilInt=null;stopHM();
+  document.getElementById('ks').classList.remove('on');document.getElementById('ks').textContent='🔒';document.getElementById('ks-sub').textContent='Insérer';
+  document.getElementById('door-el').classList.remove('on');document.getElementById('door-el').textContent='🚪';document.getElementById('door-sub').textContent='Ouverte';
+  document.getElementById('pb-el').classList.remove('on');document.getElementById('pb-el').textContent='○';document.getElementById('brake-sub').textContent='Relâché';
+  document.getElementById('bat-tog').classList.remove('on');document.getElementById('bat-sub').textContent='OFF';
+  document.getElementById('master-el').classList.remove('on');document.getElementById('master-el').querySelector('.lv').style.cssText='';document.getElementById('master-sub').textContent='OFF';
+  document.getElementById('fv-el').classList.remove('on');document.getElementById('fuel-sub').textContent='Fermé';
+  if(document.getElementById('pin-el')){document.getElementById('pin-el').classList.remove('on');document.getElementById('pin-el').textContent='📌';document.getElementById('pin-sub').textContent='En place';}
+  ['laneA','laneB','strobe'].forEach(id=>{document.getElementById(id+'-tog').classList.remove('on');document.getElementById(id+'-sub').textContent='OFF';});
+  const sb=document.getElementById('starter-el');sb.classList.remove('on','pressing');sb.innerHTML='TENIR<br>3 SEC';document.getElementById('starter-sub').textContent='Moteur OFF';
+  document.getElementById('rpm-sl').value=0;document.getElementById('rpm-disp').textContent='0 RPM';
+  setFlaps(0);
+  ['OFF','GND','ALT'].forEach(m=>document.getElementById('xm-'+m).classList.toggle('active',m==='OFF'));
+  document.getElementById('xpdr-disp').textContent='7000';document.getElementById('xpdr-sub').textContent='OFF';
+  ['la-off-btn','la-on-btn','lb-off-btn','lb-on-btn'].forEach(id=>document.getElementById(id).classList.remove('testing'));
+}
+function resetAll(){if(!confirm('Réinitialiser ?'))return;activePhase=0;resetState();buildCL();redrawAll();}
+
+function toast(msg,type='info'){
+  let t=document.getElementById('toast-el');
+  if(!t){t=document.createElement('div');t.id='toast-el';t.style.cssText='position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#111827;color:#e2e8f0;padding:.55rem 1.15rem;border-radius:8px;font-size:.82rem;z-index:999;border:1px solid;pointer-events:none;transition:opacity .25s;font-family:Inter,sans-serif;';document.body.appendChild(t);}
+  t.style.borderColor=type==='warn'?'rgba(245,158,11,.4)':type==='ok'?'rgba(34,197,94,.4)':'rgba(59,130,246,.4)';
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',2500);
 }
 
-function resetAll(){
-  if(!confirm('Réinitialiser toute la checklist et le tableau de bord ?')) return;
-  activePhase=0; resetState(); buildUI();
-}
-
-/* ══════════════════════════════════════
-   TOAST
-══════════════════════════════════════ */
-function showToast(msg,type='info'){
-  let t=document.getElementById('toast');
-  if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:.6rem 1.25rem;border-radius:8px;font-size:.85rem;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:opacity .3s;border:1px solid'; document.body.appendChild(t); }
-  t.style.borderColor=type==='warn'?'#f59e0b':type==='ok'?'#22c55e':'#3b82f6';
-  t.textContent=msg; t.style.opacity='1';
-  clearTimeout(t._to); t._to=setTimeout(()=>t.style.opacity='0',2500);
-}
-
-// Init
-buildUI();
+selectAC('dr400');
 </script>
 </body>
 </html>
