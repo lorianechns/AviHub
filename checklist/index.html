@@ -1,124 +1,169 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checklist — AviHub</title>
-  <link rel="stylesheet" href="../style.css">
-  <style>
-    /* ── Sélecteur appareil ── */
-    .aircraft-selector {
-      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
-    }
-    .aircraft-btn {
-      flex: 1; min-width: 220px; background: var(--bg2); border: 2px solid var(--border);
-      color: var(--muted); padding: 1rem 1.25rem; border-radius: var(--radius);
-      cursor: pointer; transition: all .2s; text-align: left;
-    }
-    .aircraft-btn:hover { border-color: var(--accent2); color: var(--text); }
-    .aircraft-btn.active { border-color: var(--accent); background: var(--bg3); color: var(--text); }
-    .aircraft-btn .ac-reg { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
-    .aircraft-btn .ac-name { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Checklist — AviHub</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+/* ── Layout ── */
+.cl-layout{display:grid;grid-template-columns:1fr 360px;gap:1.25rem;align-items:start;}
+@media(max-width:900px){.cl-layout{grid-template-columns:1fr;}}
 
-    /* ── Tableau de bord ── */
-    .cockpit-panel {
-      background: #060d1a;
-      border: 2px solid #1e3a5f;
-      border-radius: 14px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start;
-    }
-    .instrument-cluster {
-      display: flex; gap: 1rem; flex-wrap: wrap; flex: 1; justify-content: center;
-    }
-    .instrument {
-      display: flex; flex-direction: column; align-items: center; gap: .4rem;
-      position: relative;
-    }
-    .instrument canvas { border-radius: 50%; }
-    .inst-label {
-      font-size: .65rem; color: var(--muted); text-transform: uppercase;
-      letter-spacing: .08em; text-align: center;
-    }
-    /* Indicateurs booléens (lane A/B, pompes…) */
-    .indicators-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: .5rem;
-      min-width: 180px;
-    }
-    .indicator {
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: 6px; padding: .4rem .6rem;
-      display: flex; align-items: center; gap: .5rem;
-      font-size: .72rem; color: var(--muted);
-      transition: all .3s;
-    }
-    .indicator.on  { background: #14532d; border-color: #22c55e; color: #22c55e; }
-    .indicator.warn{ background: #78350f; border-color: var(--accent); color: var(--accent); }
-    .indicator.off { background: #1f1010; border-color: #7f1d1d; color: #ef4444; }
-    .indicator-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: currentColor; flex-shrink: 0;
-    }
+/* ── RTDB ── */
+.rtdb{background:#060d1a;border:2px solid #1e3a5f;border-radius:16px;padding:1.1rem;position:sticky;top:68px;}
+.rtdb-title{font-size:.65rem;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;}
+.rtdb-id{font-family:monospace;color:#22c55e;font-size:.7rem;}
 
-    /* ── Phases & checklist ── */
-    .phase-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .phase-tab {
-      background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
-      padding: .35rem .85rem; border-radius: 6px; cursor: pointer;
-      font-size: .78rem; transition: all .15s; white-space: nowrap;
-    }
-    .phase-tab:hover { border-color: var(--accent2); color: var(--text); }
-    .phase-tab.active { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 600; }
-    .phase-tab.done   { background: #14532d; border-color: #22c55e; color: #22c55e; }
+/* Gauges */
+.gauges-row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;padding-bottom:.85rem;border-bottom:1px solid #1e3a5f;margin-bottom:.85rem;}
+.gw{display:flex;flex-direction:column;align-items:center;gap:.25rem;}
+.gl{font-size:.55rem;color:#475569;text-transform:uppercase;letter-spacing:.05em;text-align:center;}
 
-    .checklist-item {
-      display: flex; align-items: flex-start; gap: .75rem;
-      padding: .55rem .75rem; border-radius: 6px; margin-bottom: .3rem;
-      cursor: pointer; transition: background .1s; font-size: .86rem;
-    }
-    .checklist-item:hover { background: var(--bg3); }
-    .checklist-item.checked { opacity: .45; text-decoration: line-through; }
-    .checklist-item input[type=checkbox] {
-      accent-color: #22c55e; width: 15px; height: 15px;
-      flex-shrink: 0; margin-top: 2px; cursor: pointer;
-    }
-    .item-action { flex: 1; color: var(--text); }
-    .item-value  { color: var(--accent); font-size: .78rem; white-space: nowrap; }
-    .item-critical { border-left: 2px solid #ef4444; padding-left: .5rem; }
+/* Fuel tube */
+.fuel-tube{width:14px;height:56px;background:#050d18;border:1px solid #1e3a5f;border-radius:3px;position:relative;overflow:hidden;}
+.fuel-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,#15803d,#22c55e);transition:height .8s;border-radius:0 0 2px 2px;}
+.fuel-fill.low{background:linear-gradient(to top,#dc2626,#f97316);}
 
-    .phase-header {
-      font-size: .75rem; text-transform: uppercase; letter-spacing: .1em;
-      color: var(--accent); font-weight: 700; margin-bottom: .75rem;
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .progress-bar { height: 5px; background: var(--bg3); border-radius: 3px; margin-bottom: 1.5rem; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), #22c55e); border-radius: 3px; transition: width .3s; }
-    .progress-row { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-bottom: .4rem; }
+/* Horametre */
+.hm{font-family:'Consolas',monospace;font-size:.85rem;color:#22c55e;background:#050d18;border:1px solid #1e3a5f;border-radius:5px;padding:.2rem .5rem;letter-spacing:.08em;min-width:72px;text-align:center;}
 
-    .done-banner {
-      display: none; background: linear-gradient(135deg,#14532d,#166534);
-      border: 1px solid #22c55e; border-radius: var(--radius);
-      padding: .75rem 1rem; text-align: center; font-size: .9rem; margin-top: .75rem;
-    }
-    .done-banner.show { display: block; }
+/* Phase controls zone */
+.ctrl-zone{min-height:160px;padding:.6rem 0 .85rem;border-bottom:1px solid #1e3a5f;margin-bottom:.75rem;}
+.ctrl-zone-title{font-size:.62rem;color:#3b82f6;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:.75rem;}
+.ctrl-grid{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;}
+.ctrl-g{display:flex;flex-direction:column;align-items:center;gap:.35rem;}
+.ctrl-lbl{font-size:.58rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;text-align:center;max-width:60px;}
+.ctrl-state{font-size:.58rem;color:#94a3b8;text-align:center;min-height:.9rem;}
 
-    .checklist-reset {
-      display: block; margin: 1rem auto 0; background: var(--bg3);
-      border: 1px solid var(--border); color: var(--muted); padding: .45rem 1.5rem;
-      border-radius: 6px; cursor: pointer; font-size: .82rem; transition: all .15s;
-    }
-    .checklist-reset:hover { border-color: var(--accent2); color: var(--text); }
+/* Key slot */
+.key-slot{width:44px;height:44px;background:#050d18;border:2px solid #1e3a5f;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:1.2rem;}
+.key-slot:hover{border-color:#f59e0b;}
+.key-slot.on{border-color:#f59e0b;background:#1a1200;box-shadow:0 0 10px rgba(245,158,11,.35);}
 
-    /* PDF button */
-    .pdf-btn {
-      display: inline-flex; align-items: center; gap: .5rem;
-      background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
-      padding: .4rem 1rem; border-radius: 6px; font-size: .8rem; cursor: pointer;
-      text-decoration: none; transition: all .15s; margin-bottom: 1rem;
-    }
-    .pdf-btn:hover { border-color: var(--accent2); color: var(--text); }
-  </style>
+/* Door */
+.door{width:22px;height:58px;background:#050d18;border:2px solid #1e3a5f;border-radius:4px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:.7rem;}
+.door:hover{border-color:#3b82f6;}
+.door.closed{background:#052e16;border-color:#22c55e;color:#22c55e;}
+
+/* Parking brake */
+.pbrake{width:44px;height:44px;background:#050d18;border:3px solid #1e3a5f;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#64748b;transition:all .2s;text-align:center;line-height:1.2;}
+.pbrake:hover{border-color:#f59e0b;}
+.pbrake.on{background:#2d0a0a;border-color:#ef4444;color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.3);}
+
+/* Toggle */
+.tog{width:36px;height:20px;background:#1e3a5f;border-radius:10px;position:relative;cursor:pointer;transition:background .2s;border:1px solid #334155;}
+.tog::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:1px;left:1px;transition:transform .2s;}
+.tog.on{background:#22c55e;border-color:#16a34a;}
+.tog.on::after{transform:translateX(16px);}
+.tog.err{background:#dc2626;}
+
+/* Fuel valve */
+.fvalve{width:44px;height:44px;background:#050d18;border:2px solid #1e3a5f;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.fvalve:hover{border-color:#3b82f6;}
+.fvalve.on{border-color:#22c55e;background:#052e16;}
+.fvalve-line{width:4px;height:16px;background:#475569;border-radius:2px;transition:all .3s;}
+.fvalve.on .fvalve-line{background:#22c55e;transform:rotate(90deg);}
+
+/* Pin */
+.pin-btn{width:44px;height:44px;background:#2d0a0a;border:2px solid #ef4444;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .2s;}
+.pin-btn.gone{background:#052e16;border-color:#22c55e;opacity:.6;cursor:default;}
+
+/* Master switch */
+.master{width:44px;height:44px;background:#050d18;border:2px solid #1e3a5f;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .2s;}
+.master .mlev{width:5px;height:18px;background:#334155;border-radius:3px;transition:all .2s;transform-origin:bottom center;}
+.master.on .mlev{background:#22c55e;transform:rotate(-30deg);}
+.master.on{border-color:#22c55e;background:#052e16;}
+
+/* Starter */
+.starter-btn{width:72px;height:72px;background:#7f1d1d;border:3px solid #ef4444;border-radius:50%;color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.04em;cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;box-shadow:0 4px 12px rgba(239,68,68,.3),inset 0 2px 4px rgba(0,0,0,.3);user-select:none;}
+.starter-btn:active,.starter-btn.pressing{background:#dc2626;box-shadow:0 2px 4px rgba(239,68,68,.4),inset 0 4px 8px rgba(0,0,0,.4);transform:translateY(2px);}
+.starter-btn.ok{background:#14532d;border-color:#22c55e;box-shadow:0 4px 10px rgba(34,197,94,.3);}
+
+/* RPM Slider */
+.rpm-slw{display:flex;flex-direction:column;align-items:center;gap:.4rem;}
+.rpm-sl{-webkit-appearance:none;width:150px;height:7px;border-radius:4px;background:#1e3a5f;cursor:pointer;outline:none;}
+.rpm-sl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#f59e0b;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);}
+.rpm-disp{font-family:monospace;font-size:.82rem;color:#f59e0b;font-weight:700;}
+
+/* Lane A/B test btns */
+.lane-test{display:flex;flex-direction:column;gap:.3rem;}
+.lt-btn{background:#050d18;border:1px solid #1e3a5f;color:#64748b;padding:.3rem .5rem;border-radius:5px;cursor:pointer;font-size:.65rem;font-weight:700;transition:all .15s;text-align:center;}
+.lt-btn:hover{border-color:#f59e0b;color:#f59e0b;}
+.lt-btn.off-state{border-color:#ef4444;color:#ef4444;background:#1f0a0a;}
+
+/* Flaps */
+.flaps-row{display:flex;gap:.3rem;}
+.flap-btn{flex:1;background:#050d18;border:2px solid #1e3a5f;color:#64748b;padding:.35rem .25rem;border-radius:5px;cursor:pointer;font-size:.7rem;font-weight:700;text-align:center;transition:all .15s;}
+.flap-btn:hover{border-color:#3b82f6;color:#93c5fd;}
+.flap-btn.active{background:#1e3a5f;border-color:#3b82f6;color:#3b82f6;}
+
+/* Transponder */
+.xpdr-disp{background:#050d18;border:1px solid #1e3a5f;border-radius:5px;padding:.2rem .4rem;font-family:monospace;font-size:.9rem;color:#22c55e;letter-spacing:.1em;cursor:pointer;text-align:center;}
+.xpdr-modes{display:flex;gap:.25rem;margin-top:.3rem;}
+.xm-btn{flex:1;background:#050d18;border:1px solid #1e3a5f;color:#475569;padding:.2rem;border-radius:4px;font-size:.58rem;font-weight:700;cursor:pointer;text-align:center;transition:all .12s;}
+.xm-btn.active{background:#1e3a5f;border-color:#3b82f6;color:#3b82f6;}
+.xpdr-kp{display:none;grid-template-columns:repeat(3,1fr);gap:.25rem;margin-top:.4rem;}
+.xpdr-kp.open{display:grid;}
+.xk{background:#0d1b2a;border:1px solid #1e3a5f;color:#94a3b8;padding:.3rem;border-radius:3px;font-size:.78rem;font-weight:700;cursor:pointer;text-align:center;transition:background .1s;}
+.xk:hover{background:#1e3a5f;color:#e2e8f0;}
+
+/* Status strip */
+.status-strip{display:flex;flex-wrap:wrap;gap:.35rem;}
+.sp{font-size:.6rem;padding:.18rem .45rem;border-radius:999px;border:1px solid;font-weight:700;white-space:nowrap;}
+.sp.on {background:#052e16;border-color:#22c55e;color:#22c55e;}
+.sp.off{background:#0a0f1a;border-color:#1e3a5f;color:#334155;}
+.sp.warn{background:#1c1007;border-color:#f59e0b;color:#f59e0b;}
+.sp.red{background:#1f0a0a;border-color:#ef4444;color:#ef4444;}
+
+/* Checklist items */
+.cl-item{display:flex;align-items:flex-start;gap:.6rem;padding:.5rem .6rem;border-radius:6px;margin-bottom:.25rem;transition:background .1s;font-size:.83rem;}
+.cl-item:hover{background:var(--bg3);}
+.cl-item.checked{opacity:.4;text-decoration:line-through;}
+.cl-item.critical{border-left:2px solid #ef4444;padding-left:.4rem;}
+.cl-item.locked{opacity:.4;pointer-events:none;}
+.cl-item input[type=checkbox]{accent-color:#22c55e;width:14px;height:14px;flex-shrink:0;margin-top:2px;cursor:pointer;}
+.ia{flex:1;color:var(--text);}
+.iv{color:var(--accent);font-size:.74rem;white-space:nowrap;}
+.ph-hdr{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
+.done-bn{display:none;background:#052e16;border:1px solid #22c55e;border-radius:7px;padding:.55rem 1rem;text-align:center;font-size:.82rem;color:#22c55e;margin-top:.6rem;}
+.done-bn.show{display:block;}
+
+/* Phase tabs */
+.ph-tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.85rem;}
+.ph-tab{background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:.3rem .65rem;border-radius:6px;cursor:pointer;font-size:.74rem;transition:all .15s;white-space:nowrap;}
+.ph-tab:hover{border-color:var(--accent2);color:var(--text);}
+.ph-tab.active{background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:700;}
+.ph-tab.done{background:#052e16;border-color:#22c55e;color:#22c55e;}
+
+/* Progress */
+.prog-row{display:flex;justify-content:space-between;font-size:.73rem;color:var(--muted);margin-bottom:.35rem;}
+.prog{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:.85rem;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);border-radius:2px;transition:width .3s;}
+
+/* Radio encart */
+.radio-enc{margin:.25rem 0 .5rem 1.75rem;}
+.radio-tog{background:none;border:none;color:#3b82f6;font-size:.7rem;cursor:pointer;padding:0;display:flex;align-items:center;gap:.3rem;}
+.radio-tog:hover{color:#93c5fd;}
+.radio-body{display:none;margin-top:.4rem;border-left:2px solid #1e3a5f;padding-left:.65rem;}
+.radio-body.open{display:block;}
+.rl{font-size:.73rem;line-height:1.7;padding:.05rem 0;}
+.rp{color:#f59e0b;}
+.rt{color:#22c55e;}
+.ri{color:#64748b;font-style:italic;}
+
+/* Reset btn */
+.reset-btn{display:block;margin:1rem auto 0;background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:.4rem 1.25rem;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .15s;}
+.reset-btn:hover{border-color:var(--accent2);color:var(--text);}
+
+/* Aircraft selector */
+.ac-sel{display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.ac-btn{flex:1;min-width:200px;background:var(--bg2);border:2px solid var(--border);color:var(--muted);padding:.85rem 1rem;border-radius:10px;cursor:pointer;text-align:left;transition:all .2s;}
+.ac-btn:hover{border-color:var(--accent2);}
+.ac-btn.active{border-color:var(--accent);background:var(--bg3);}
+.ac-btn .reg{font-size:1.15rem;font-weight:800;color:var(--accent);}
+.ac-btn .nam{font-size:.88rem;font-weight:700;color:var(--text);margin:.15rem 0;}
+.ac-btn .sub{font-size:.72rem;color:var(--muted);}
+</style>
 </head>
 <body>
 <nav>
@@ -127,7 +172,7 @@
     <li><a href="../index.html">Accueil</a></li>
     <li><a href="../actualites.html">Actualités</a></li>
     <li><a href="../histoire.html">Histoire</a></li>
-    <li><a href="../bia/index.html">Fiches BIA</a></li>
+    <li><a href="../bia/index.html">Connaissances</a></li>
     <li><a href="index.html" class="active">Checklist</a></li>
     <li><a href="../notes/index.html">Mes notes</a></li>
   </ul>
@@ -135,627 +180,820 @@
 
 <div class="container">
   <div class="page-title">🛩️ Checklists interactives</div>
-  <div class="page-subtitle">Sélectionne l'appareil — instruments animés en temps réel</div>
+  <div class="page-subtitle">Tableau de bord animé — instruments réactifs en temps réel</div>
 
-  <!-- Sélecteur d'appareil -->
-  <div class="aircraft-selector">
-    <button class="aircraft-btn active" onclick="selectAircraft('dr400')" id="btn-dr400">
-      <div class="ac-reg">F-GORP</div>
-      <div style="font-size:.95rem;font-weight:700;margin:.2rem 0">DR400-120 ROTAX</div>
-      <div class="ac-name">Robin Aircraft · Lycoming ROTAX 912 · 4 places</div>
+  <!-- Aircraft selector -->
+  <div class="ac-sel">
+    <button class="ac-btn active" id="btn-dr400" onclick="selectAC('dr400')">
+      <div class="reg">F-GORP</div>
+      <div class="nam">DR400-120 ROTAX</div>
+      <div class="sub">Robin Aircraft · Rotax 912 · 4 places</div>
     </button>
-    <button class="aircraft-btn" onclick="selectAircraft('ulm')" id="btn-ulm">
-      <div class="ac-reg">F-JKJZ</div>
-      <div style="font-size:.95rem;font-weight:700;margin:.2rem 0">Super Guépard Voyage</div>
-      <div class="ac-name">ULM biplace · Rotax · Parachute de secours</div>
+    <button class="ac-btn" id="btn-ulm" onclick="selectAC('ulm')">
+      <div class="reg">F-JKJZ</div>
+      <div class="nam">Super Guépard Voyage</div>
+      <div class="sub">ULM biplace · Parachute de secours</div>
     </button>
   </div>
 
-  <!-- Liens PDF -->
-  <div id="pdf-links"></div>
+  <!-- Progress -->
+  <div class="prog-row"><span id="prog-lbl">0 / 0</span><span id="prog-pct">0%</span></div>
+  <div class="prog"><div class="prog-fill" id="prog-fill" style="width:0"></div></div>
 
-  <!-- Tableau de bord -->
-  <div class="cockpit-panel" id="cockpit-panel">
-    <div class="instrument-cluster" id="instrument-cluster"></div>
-    <div class="indicators-grid" id="indicators-grid"></div>
+  <div class="cl-layout">
+    <!-- Left: checklist -->
+    <div>
+      <div class="ph-tabs" id="ph-tabs"></div>
+      <div id="cl-content"></div>
+      <button class="reset-btn" onclick="resetAll()">↺ Réinitialiser</button>
+    </div>
+
+    <!-- Right: RTDB -->
+    <div class="rtdb" id="rtdb">
+      <div class="rtdb-title">
+        <span>🎛️ TABLEAU DE BORD</span>
+        <span class="rtdb-id" id="rtdb-id">F-GORP</span>
+      </div>
+
+      <!-- Gauges row -->
+      <div class="gauges-row">
+        <div class="gw"><canvas id="c-rpm" width="88" height="88"></canvas><div class="gl">Tachy RPM</div></div>
+        <div class="gw"><canvas id="c-spd" width="78" height="78"></canvas><div class="gl">Badin km/h</div></div>
+        <div class="gw"><canvas id="c-alt" width="72" height="72"></canvas><div class="gl">Alti ft</div></div>
+        <div class="gw"><canvas id="c-oil" width="68" height="68"></canvas><div class="gl">Huile °C</div></div>
+        <div class="gw">
+          <div class="fuel-tube-wrap" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;">
+            <div class="fuel-tube" id="fuel-tube"><div class="fuel-fill" id="fuel-fill" style="height:100%"></div></div>
+            <div style="font-size:.55rem;color:#475569;text-transform:uppercase;letter-spacing:.04em">Carbu</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase controls zone -->
+      <div class="ctrl-zone" id="ctrl-zone">
+        <div class="ctrl-zone-title" id="ctrl-zone-title">↑ Sélectionne une phase</div>
+        <div class="ctrl-grid" id="ctrl-grid"></div>
+      </div>
+
+      <!-- Status strip -->
+      <div class="status-strip" id="status-strip"></div>
+
+      <!-- Horamètre (toujours visible si batterie ON) -->
+      <div id="hm-wrap" style="margin-top:.6rem;display:none;align-items:center;gap:.5rem;">
+        <span style="font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:.06em">⏱ HORAMÈTRE</span>
+        <div class="hm" id="hm">00:00:00</div>
+      </div>
+    </div>
   </div>
-
-  <!-- Barre de progression globale -->
-  <div class="progress-row">
-    <span id="progress-label">0 / 0 items cochés</span>
-    <span id="progress-pct">0%</span>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0"></div></div>
-
-  <!-- Onglets phases -->
-  <div class="phase-tabs" id="phase-tabs"></div>
-
-  <!-- Contenu checklist -->
-  <div id="checklist-content"></div>
-
-  <button class="checklist-reset" onclick="resetAll()">↺ Réinitialiser</button>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   DONNÉES CHECKLISTS (issues des PDFs officiels)
-   ═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   ÉTAT GLOBAL
+══════════════════════════════════════ */
+const S = {
+  ac: 'dr400',
+  keyInserted: false, doorClosed: false, parkingBrake: false,
+  batteryOn: false, fuelOn: false, masterOn: false,
+  parachutePinGone: false, strobeOn: false,
+  laneA: false, laneB: false,
+  engineRunning: false, engineStarting: false,
+  rpm: 0, oilTemp: 20, fuelLevel: 100,
+  speed: 0, altitude: 600,
+  flaps: 0,
+  xpdrMode: 'OFF', xpdrCode: '7000', xpdrEditing: false,
+  horameterStart: null,
+  laneATestOff: false, laneBTestOff: false,
+  oilTempTimer: null, startTimer: null,
+  checked: {},
+};
+
+/* ══════════════════════════════════════
+   DONNÉES CHECKLISTS
+══════════════════════════════════════ */
 const AIRCRAFT = {
   dr400: {
-    label: "DR400-120 ROTAX · F-GORP",
-    pdfName: "FGORP-Checklist.pdf",
-    rpmMax: 6000, rpmCruise: 4000, rpmTakeoff: 5200,
-    speeds: { vs: 0, vr: 110, vim: 120, vom: 140, app: 110, vne: 284 },
-    pressureMax: 4,
-    phases: [
-      {
-        id: "prise_en_compte", label: "Prise en compte", icon: "📋",
-        items: [
-          { a: "Carnet de route", v: "Essence / Huile / Potentiel" },
-          { a: "Horamètre", v: "Noté" },
-          { a: "Documents", v: "À bord" },
-          { a: "Frein de park", v: "Serré" },
-          { a: "Visite pré-vol Int & Ext", v: "Effectuée" },
-          { a: "Niveau d'Huile", v: "Vérifié & Trappe Fermée" },
-          { a: "Flammes & caches hélice", v: "Enlevés" },
-          { a: "Barre de manœuvre", v: "Enlevée" },
-          { a: "Ailes", v: "Dégagées" },
-          { a: "Verrière", v: "Tirée" },
-          { a: "Sièges", v: "Verrouillés" },
-          { a: "Volets", v: "Rentrés" },
-          { a: "Trim", v: "Débattement / Neutre" },
-          { a: "Essence", v: "Ouverte", inst: "fuel" },
-          { a: "Contact — Clés", v: "ON", inst: "battery" },
-          { a: "Batterie", v: "ON", inst: "battery" },
-          { a: "Voyants Alarmes", v: "Testés" },
-          { a: "Strobe / Anticollision", v: "ON", inst: "strobe" },
-          { a: "Pompe Ess normale", v: "ON", inst: "pump1" },
-          { a: "Pompe Ess secours", v: "OFF" },
-          { a: "Lane A et B", v: "ON", inst: "laneAB" },
-          { a: "Pression essence", v: "2,8 à 3,2 bars", inst: "pressure" },
-        ]
-      },
-      {
-        id: "mise_en_route", label: "Mise en route", icon: "🔑",
-        items: [
-          { a: "Abords Dégagés", v: "Pieds sur freins" },
-          { a: "Champ d'hélice", v: "Dégagé", critical: true },
-          { a: "Manette gaz", v: "½ cm vers l'avant" },
-          { a: "Démarreur", v: "10 sec max", inst: "rpm_low" },
-          { a: "Régime > 2 500 RPM", v: "Pendant 5 sec", inst: "rpm_2500" },
-          { a: "Alarmes rouges & Masses", v: "Éteintes" },
-        ]
-      },
-      {
-        id: "roulage", label: "Roulage", icon: "🚦",
-        items: [
-          { a: "Transpondeur", v: "GND", inst: "xpdr_gnd" },
-          { a: "Phare", v: "ON" },
-          { a: "Essais Freins", v: "Vérifiés" },
-        ]
-      },
-      {
-        id: "point_fixe", label: "Point fixe", icon: "⚙️",
-        items: [
-          { a: "Frein de park", v: "Serré" },
-          { a: "Paramètres moteur", v: "Dans le vert" },
-          { a: "Régime", v: "4 000 RPM", inst: "rpm_4000" },
-          { a: "Lane A — OFF", v: "POWER ↓", inst: "laneA_off", critical: true },
-          { a: "Lane A — ON", v: "ECO Max", inst: "laneA_on" },
-          { a: "Lane B — OFF", v: "POWER −250", inst: "laneB_off", critical: true },
-          { a: "Lane B — ON", v: "ECO RPM", inst: "laneB_on" },
-          { a: "Essai Plein Gaz", v: "Mini 5 200 RPM", inst: "rpm_5200" },
-          { a: "Essai ralenti", v: "1 400 / 1 900 RPM" },
-          { a: "Tension ECU", v: "Mini 12,7 V", inst: "voltage" },
-          { a: "Régime Attente", v: "3 000 RPM", inst: "rpm_3000" },
-        ]
-      },
-      {
-        id: "avant_decollage", label: "Avant décollage", icon: "🛫",
-        items: [
-          { a: "Alarmes", v: "Éteintes" },
-          { a: "Altimètres", v: "QNH", inst: "alt" },
-          { a: "Transpondeur", v: "ALT", inst: "xpdr_alt" },
-          { a: "LANE A+B", v: "ON", inst: "laneAB" },
-          { a: "Autonomie", v: "Annoncée" },
-          { a: "Pompes élec", v: "Les 2 ON", inst: "pump1" },
-          { a: "EMU — Paramètres moteur", v: "Vérifiés" },
-          { a: "Trim", v: "Décollage" },
-          { a: "Essence", v: "Ouverte", inst: "fuel" },
-          { a: "Volets", v: "Plein sortis puis décollage" },
-          { a: "Commandes de vol", v: "Libres / Bon sens", critical: true },
-          { a: "Ceintures", v: "Attachées", critical: true },
-          { a: "Verrière", v: "Verrouillée", critical: true },
-          { a: "TEM — Briefing départ", v: "Effectué" },
-          { a: "HSI", v: "QFU" },
-          { a: "5 200 RPM mini — Manche dans le vent", v: "Décollage", inst: "rpm_5200" },
-        ]
-      },
-      {
-        id: "atterrissage", label: "Atterrissage", icon: "🛬",
-        items: [
-          { a: "Transpondeur", v: "ALT", inst: "xpdr_alt" },
-          { a: "Pompes essence", v: "Les 2 ON", inst: "pump1" },
-          { a: "LANE A+B", v: "ON", inst: "laneAB" },
-          { a: "Alarmes", v: "Éteintes" },
-          { a: "Altimètre", v: "QNH", inst: "alt" },
-          { a: "Volets", v: "1 ou 2 crans" },
-          { a: "Verrière", v: "Déverrouillée finale" },
-          { a: "Ceintures", v: "Serrées", critical: true },
-          { a: "Vitesse approche", v: "110 km/h + Kve", inst: "spd_110" },
-        ]
-      },
-      {
-        id: "arret", label: "Arrêt moteur", icon: "🔴",
-        items: [
-          { a: "LANE A & B", v: "OFF", inst: "laneAB_off" },
-          { a: "Batterie", v: "OFF", inst: "battery_off" },
-          { a: "Alternateur", v: "OFF" },
-          { a: "Pompes essence élec", v: "Les 2 OFF", inst: "pump_off" },
-          { a: "Transpondeur", v: "STBY", inst: "xpdr_stby" },
-          { a: "Robinet Essence", v: "Fermé", inst: "fuel_off" },
-          { a: "Verrière", v: "Ouverte" },
-          { a: "Calles / Attaches", v: "Mises en place" },
-        ]
-      }
+    label: 'DR400-120 ROTAX · F-GORP', id: 'F-GORP',
+    rpmMax:6000, rpmTakeoff:5200,
+    speeds:{vr:110,vim:120,vom:140,app:110,vne:284},
+    phases:[
+      { id:'prise', label:'Prise en compte', icon:'📋', ctrl:'prise', items:[
+        {a:'Carnet de route',v:'Essence / Huile / Potentiel'},
+        {a:'Horamètre',v:'Noté'},
+        {a:'Documents',v:'À bord'},
+        {a:'Visite pré-vol',v:'Effectuée'},
+        {a:'Niveau d\'huile',v:'Vérifié & trappe fermée'},
+        {a:'Flammes & caches hélice',v:'Enlevés'},
+        {a:'Barre de manœuvre',v:'Enlevée'},
+        {a:'Ailes',v:'Dégagées'},
+        {a:'Verrière',v:'Tirée'},
+        {a:'Sièges',v:'Verrouillés'},
+        {a:'Volets',v:'Rentrés'},
+        {a:'Trim',v:'Débattement / Neutre'},
+        {a:'Portes',v:'Fermées & verrouillées',rtdb:'door'},
+        {a:'Frein de park',v:'Serré',rtdb:'brake'},
+        {a:'Contact — Clés',v:'En place',rtdb:'key',lock:true},
+      ]},
+      { id:'avant', label:'Avant MES', icon:'🔌', ctrl:'avant', items:[
+        {a:'Batterie',v:'ON',rtdb:'battery',autocheck:true},
+        {a:'Voyants alarmes',v:'Testés'},
+        {a:'Strobe / Anticollision',v:'ON',rtdb:'strobe',autocheck:true},
+        {a:'Pompe essence normale',v:'ON'},
+        {a:'Lane A',v:'ON',rtdb:'laneA',autocheck:true},
+        {a:'Lane B',v:'ON',rtdb:'laneB',autocheck:true},
+        {a:'Pression essence',v:'2,8 à 3,2 bars',rtdb:'fuel',autocheck:true},
+        {a:'Master Switch',v:'ON',rtdb:'master',autocheck:true},
+        {a:'Instruments',v:'Allumés'},
+        {a:'Horamètre',v:'Noté'},
+        {a:'Goupilles parachute',v:'En place — ULM uniquement'},
+      ]},
+      { id:'mes', label:'Mise en route', icon:'🔑', ctrl:'mes', items:[
+        {a:'Abords dégagés',v:'Pieds sur freins',critical:true},
+        {a:'Champ d\'hélice',v:'Dégagé',critical:true},
+        {a:'Robinet essence',v:'Ouvert',rtdb:'fuelvalve',autocheck:true},
+        {a:'Démarrage moteur',v:'—',rtdb:'starter',autocheck:true,critical:true},
+        {a:'Alarmes rouges & masses',v:'Éteintes'},
+      ]},
+      { id:'roulage', label:'Roulage', icon:'🚦', ctrl:'radio', items:[
+        {a:'Transpondeur',v:'GND',rtdb:'xpdr_gnd',autocheck:true,
+          radio:{msg:[
+            {t:'p',tx:'LFBZ, F-GORP, bonjour, DR400, stationnement Echo, demande roulage piste 28, VFR, information Bravo'},
+            {t:'c',tx:'F-GORP, bonjour, autorisé à rouler piste 28, via voie de circulation Alpha, QNH 1013'},
+            {t:'p',tx:'Roulage piste 28 via Alpha, QNH 1013, F-GORP'}
+          ]}},
+        {a:'Phare',v:'ON'},
+        {a:'Essais freins',v:'Vérifiés'},
+      ]},
+      { id:'ptfixe', label:'Point fixe', icon:'⚙️', ctrl:'ptfixe', items:[
+        {a:'Frein de park',v:'Serré',rtdb:'brake'},
+        {a:'Paramètres moteur',v:'Dans le vert'},
+        {a:'Régime',v:'4 000 RPM',rtdb:'rpm_4000'},
+        {a:'Lane A — OFF',v:'POWER ↓ (chute)',rtdb:'laneA_off',critical:true},
+        {a:'Lane A — ON',v:'ECO Max',rtdb:'laneA_on'},
+        {a:'Lane B — OFF',v:'POWER −250 RPM',rtdb:'laneB_off',critical:true},
+        {a:'Lane B — ON',v:'ECO RPM',rtdb:'laneB_on'},
+        {a:'Essai Plein Gaz',v:'Mini 5 200 RPM',rtdb:'rpm_5200'},
+        {a:'Essai ralenti',v:'1 400–1 900 RPM',rtdb:'rpm_ralenti'},
+        {a:'Tension ECU',v:'Mini 12,7 V'},
+        {a:'Volets',v:'Position décollage',rtdb:'flaps'},
+        {a:'Transpondeur',v:'ALT',rtdb:'xpdr_alt',autocheck:true,
+          radio:{msg:[
+            {t:'i',tx:'Exemple de briefing de départ (TEM) :'},
+            {t:'p',tx:'LFBZ, F-GORP, au point d\'arrêt piste 28, prêt pour le départ, VFR vers LFBD, niveau 2500 ft, information Bravo'},
+            {t:'c',tx:'F-GORP, autorisé au décollage piste 28, vent 280°/12 nœuds, rapportez en montée initiale'},
+            {t:'p',tx:'Décollage piste 28, F-GORP'}
+          ]}},
+      ]},
+      { id:'decol', label:'Décollage', icon:'🛫', items:[
+        {a:'Alarmes',v:'Éteintes'},{a:'Altimètre',v:'QNH'},{a:'LANE A+B',v:'ON'},
+        {a:'Pompes élec',v:'Les 2 ON'},{a:'Trim',v:'Décollage'},
+        {a:'Commandes de vol',v:'Libres / Bon sens',critical:true},
+        {a:'Ceintures',v:'Attachées',critical:true},{a:'Verrière',v:'Verrouillée',critical:true},
+        {a:'5 200 RPM mini',v:'Manche dans le vent'},
+      ]},
+      { id:'att', label:'Atterrissage', icon:'🛬', items:[
+        {a:'Pompes',v:'Les 2 ON'},{a:'LANE A+B',v:'ON'},{a:'Alarmes',v:'Éteintes'},
+        {a:'Altimètre',v:'QNH recalé'},{a:'Volets',v:'1 ou 2 crans'},
+        {a:'Ceintures',v:'Serrées',critical:true},{a:'Vitesse approche',v:'110 km/h + Kve'},
+      ]},
+      { id:'arret', label:'Arrêt moteur', icon:'🔴', items:[
+        {a:'LANE A & B',v:'OFF'},{a:'Batterie',v:'OFF'},{a:'Alternateur',v:'OFF'},
+        {a:'Pompes',v:'Les 2 OFF'},{a:'Transpondeur',v:'STBY'},
+        {a:'Robinet essence',v:'Fermé'},{a:'Verrière',v:'Ouverte'},
+        {a:'Calles / attaches',v:'En place'},
+      ]},
     ]
   },
-
   ulm: {
-    label: "Super Guépard Voyage · F-JKJZ",
-    pdfName: "FJKJZ-Checklist.pdf",
-    rpmMax: 6200, rpmCruise: 4800, rpmTakeoff: 5500,
-    speeds: { vs: 0, vr: 105, vim: 105, vom: 125, app: 80, vne: 180, vfe: 110 },
-    phases: [
-      {
-        id: "prise_en_compte", label: "Prise en compte", icon: "📋",
-        items: [
-          { a: "Carnet de route", v: "Essence / Huile / Potentiel" },
-          { a: "Visite pré-vol Int & Ext", v: "Effectuée" },
-          { a: "Pitot", v: "Soufflé" },
-          { a: "Fenêtres Arrière", v: "Fermées" },
-          { a: "Sièges", v: "Réglés" },
-          { a: "Palonniers", v: "Réglés" },
-          { a: "Goupilles Manche", v: "En place" },
-          { a: "Casques", v: "Branchés" },
-          { a: "Clé Batterie", v: "En place", inst: "battery" },
-          { a: "Portes", v: "Fermées & Verrouillées" },
-          { a: "Ceintures & harnais", v: "Réglés — Bouclés", critical: true },
-          { a: "Frein de park", v: "Serré" },
-          { a: "Bouchon réservoir", v: "En place" },
-        ]
-      },
-      {
-        id: "avant_mise_en_route", label: "Avant mise en route", icon: "🔌",
-        items: [
-          { a: "Barre de manœuvre", v: "Enlevée" },
-          { a: "Batterie", v: "ON", inst: "battery" },
-          { a: "Témoin Batterie", v: "Allumé" },
-          { a: "Robinet Essence", v: "Ouvert", inst: "fuel" },
-          { a: "2 Goupilles parachute", v: "Enlevées", critical: true },
-          { a: "Master Switch", v: "ON" },
-          { a: "Instruments", v: "Allumés" },
-          { a: "Horamètre", v: "Noté" },
-          { a: "Strobe", v: "ON", inst: "strobe" },
-          { a: "Lane A & B", v: "ON", inst: "laneAB" },
-          { a: "Gaz", v: "Réduits" },
-        ]
-      },
-      {
-        id: "mise_en_route", label: "Mise en route", icon: "🔑",
-        items: [
-          { a: "Sécurité — Personnes aux abords", v: "Dégagées", critical: true },
-          { a: "Champ d'hélice", v: "Dégagé", critical: true },
-          { a: "Démarrage moteur", v: "—", inst: "rpm_low" },
-          { a: "Alarmes", v: "Vérifiées" },
-        ]
-      },
-      {
-        id: "roulage", label: "Roulage", icon: "🚦",
-        items: [
-          { a: "Appel radio", v: "Abords dégagés" },
-          { a: "Essais Freins", v: "OK" },
-          { a: "Bille", v: "Vérifiée" },
-        ]
-      },
-      {
-        id: "point_fixe", label: "Point fixe", icon: "⚙️",
-        items: [
-          { a: "Frein de park", v: "Serré" },
-          { a: "Température Huile", v: "Mini 50°C", inst: "oil_temp" },
-          { a: "Température CHT", v: "Mini 70°C" },
-          { a: "Régime Moteur", v: "4 000 RPM", inst: "rpm_4000" },
-          { a: "Lane A — OFF", v: "Chute max 300 RPM", inst: "laneA_off", critical: true },
-          { a: "Lane A — ON", v: "Retour normal", inst: "laneA_on" },
-          { a: "Lane B — OFF", v: "Diff. max 115 RPM", inst: "laneB_off", critical: true },
-          { a: "Lane B — ON", v: "Retour normal", inst: "laneB_on" },
-          { a: "Essai ralenti", v: "1 600 / 1 800 RPM" },
-          { a: "Régime moteur", v: "2 000 RPM", inst: "rpm_2000" },
-        ]
-      },
-      {
-        id: "avant_decollage", label: "Avant décollage", icon: "🛫",
-        items: [
-          { a: "Frein de park", v: "Serré" },
-          { a: "Autonomie", v: "Annoncée" },
-          { a: "Trim", v: "Position décollage" },
-          { a: "Commandes de vol", v: "Libres / Bon sens", critical: true },
-          { a: "Volets", v: "Plein sortis puis décollage" },
-          { a: "Transpondeur", v: "ALT", inst: "xpdr_alt" },
-          { a: "Accessoires et bagages", v: "Attachés" },
-          { a: "Goupille parachute", v: "Enlevée", critical: true },
-          { a: "TEM — Briefing départ", v: "Effectué" },
-        ]
-      },
-      {
-        id: "atterrissage", label: "Atterrissage", icon: "🛬",
-        items: [
-          { a: "Volets", v: "Plein sortis" },
-          { a: "Vitesse approche", v: "80 km/h — face au vent", inst: "spd_80" },
-          { a: "Ceintures / Harnais", v: "Attachés", critical: true },
-          { a: "Finale", v: "80 km/h — 1 cran" },
-        ]
-      },
-      {
-        id: "arret", label: "Arrêt moteur", icon: "🔴",
-        items: [
-          { a: "Lane A & B", v: "OFF", inst: "laneAB_off" },
-          { a: "Clé Batterie", v: "OFF", inst: "battery_off" },
-          { a: "Goupille Parachute", v: "En place" },
-          { a: "Robinet Essence", v: "Fermé", inst: "fuel_off" },
-        ]
-      }
+    label: 'Super Guépard · F-JKJZ', id: 'F-JKJZ',
+    rpmMax:6200, rpmTakeoff:5500,
+    speeds:{vr:105,vim:105,vom:125,app:80,vfe:110,vne:180},
+    phases:[
+      { id:'prise', label:'Prise en compte', icon:'📋', ctrl:'prise', items:[
+        {a:'Carnet de route',v:'Essence / Huile / Potentiel'},
+        {a:'Visite pré-vol',v:'Effectuée'},{a:'Pitot',v:'Soufflé'},
+        {a:'Fenêtres arrière',v:'Fermées'},{a:'Sièges',v:'Réglés'},
+        {a:'Palonniers',v:'Réglés'},{a:'Casques',v:'Branchés'},
+        {a:'Portes',v:'Fermées & verrouillées',rtdb:'door'},
+        {a:'Frein de park',v:'Serré',rtdb:'brake'},
+        {a:'Clé batterie',v:'En place',rtdb:'key',lock:true},
+        {a:'Ceintures & harnais',v:'Réglés — bouclés',critical:true},
+      ]},
+      { id:'avant', label:'Avant MES', icon:'🔌', ctrl:'avant_ulm', items:[
+        {a:'Barre de manœuvre',v:'Enlevée'},
+        {a:'Batterie',v:'ON',rtdb:'battery',autocheck:true},
+        {a:'Témoin batterie',v:'Allumé'},
+        {a:'Robinet essence',v:'Ouvert',rtdb:'fuelvalve',autocheck:true},
+        {a:'2 Goupilles parachute',v:'Enlevées',rtdb:'pin',autocheck:true,critical:true},
+        {a:'Master Switch',v:'ON',rtdb:'master',autocheck:true},
+        {a:'Strobe',v:'ON',rtdb:'strobe',autocheck:true},
+        {a:'Lane A & B',v:'ON',rtdb:'laneA',autocheck:true},
+        {a:'Horamètre',v:'Noté'},
+      ]},
+      { id:'mes', label:'Mise en route', icon:'🔑', ctrl:'mes', items:[
+        {a:'Sécurité — abords dégagés',v:'Confirmé',critical:true},
+        {a:'Champ d\'hélice',v:'Dégagé',critical:true},
+        {a:'Démarrage moteur',v:'—',rtdb:'starter',autocheck:true,critical:true},
+        {a:'Alarmes',v:'Vérifiées'},
+      ]},
+      { id:'roulage', label:'Roulage', icon:'🚦', ctrl:'radio', items:[
+        {a:'Appel radio',v:'Abords dégagés',
+          radio:{msg:[
+            {t:'p',tx:'LFBZ, F-JKJZ, Super Guépard, demande roulage piste 28'},
+            {t:'c',tx:'F-JKJZ, autorisé à rouler piste 28, QNH 1013'},
+            {t:'p',tx:'Roulage 28, F-JKJZ'}
+          ]}},
+        {a:'Essais freins',v:'OK'},{a:'Bille',v:'Vérifiée'},
+      ]},
+      { id:'ptfixe', label:'Point fixe', icon:'⚙️', ctrl:'ptfixe', items:[
+        {a:'Frein de park',v:'Serré',rtdb:'brake'},
+        {a:'Température huile',v:'Mini 50°C',rtdb:'oil_ok'},
+        {a:'Température CHT',v:'Mini 70°C'},
+        {a:'Régime',v:'4 000 RPM',rtdb:'rpm_4000'},
+        {a:'Lane A — OFF',v:'Chute max 300 RPM',rtdb:'laneA_off',critical:true},
+        {a:'Lane A — ON',v:'Retour normal',rtdb:'laneA_on'},
+        {a:'Lane B — OFF',v:'Diff. max 115 RPM',rtdb:'laneB_off',critical:true},
+        {a:'Lane B — ON',v:'Retour normal',rtdb:'laneB_on'},
+        {a:'Essai ralenti',v:'1 600–1 800 RPM',rtdb:'rpm_ralenti'},
+        {a:'Volets',v:'Position décollage',rtdb:'flaps'},
+        {a:'Transpondeur',v:'ALT',rtdb:'xpdr_alt',autocheck:true,
+          radio:{msg:[
+            {t:'i',tx:'Briefing départ :'},
+            {t:'p',tx:'LFBZ, F-JKJZ, au point d\'arrêt piste 28, prêt au départ, VFR local, information Bravo'},
+            {t:'c',tx:'F-JKJZ, autorisé au décollage piste 28, vent 270°/10 nœuds'},
+            {t:'p',tx:'Décollage 28, F-JKJZ'}
+          ]}},
+      ]},
+      { id:'decol', label:'Décollage', icon:'🛫', items:[
+        {a:'Frein de park',v:'Serré'},{a:'Trim',v:'Position décollage'},
+        {a:'Commandes de vol',v:'Libres / Bon sens',critical:true},
+        {a:'Volets',v:'Plein sortis puis décollage'},
+        {a:'Transpondeur',v:'ALT'},{a:'Goupille parachute',v:'Enlevée',critical:true},
+      ]},
+      { id:'att', label:'Atterrissage', icon:'🛬', items:[
+        {a:'Volets',v:'Plein sortis'},{a:'Vitesse approche',v:'80 km/h face au vent'},
+        {a:'Ceintures / Harnais',v:'Attachés',critical:true},{a:'Finale',v:'80 km/h — 1 cran'},
+      ]},
+      { id:'arret', label:'Arrêt moteur', icon:'🔴', items:[
+        {a:'Lane A & B',v:'OFF'},{a:'Clé batterie',v:'OFF'},
+        {a:'Goupille parachute',v:'En place'},{a:'Robinet essence',v:'Fermé'},
+      ]},
     ]
   }
 };
 
-/* ═══════════════════════════════════
-   ÉTAT GLOBAL
-   ═══════════════════════════════════ */
-let currentAC = 'dr400';
-let activePhase = 0;
-let checked = {};   // { "phaseId-itemIdx": bool }
-let instState = {}; // instrument states
-
-function initState() {
-  checked = {};
-  instState = {
-    rpm: 0, speed: 0, alt: 0,
-    battery: false, fuel: false, strobe: false,
-    pump1: false, pump2: false,
-    laneA: true, laneB: true,
-    pressure: 0, voltage: 12.4,
-    xpdr: 'OFF', oilTemp: 20
-  };
-}
-
-/* ═══════════════════════════════════
-   INSTRUMENTS — CANVAS
-   ═══════════════════════════════════ */
-function drawGauge(canvasId, opts) {
-  const c = document.getElementById(canvasId);
-  if (!c) return;
-  const ctx = c.getContext('2d');
-  const S = c.width;
-  const cx = S/2, cy = S/2, r = S/2 - 4;
-  ctx.clearRect(0, 0, S, S);
-
-  // Fond
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.fillStyle = '#050d18';
-  ctx.fill();
-  ctx.strokeStyle = opts.borderColor || '#1e3a5f';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Arc de fond (gris)
-  const startAngle = opts.startAngle ?? (Math.PI * 0.75);
-  const endAngle   = opts.endAngle   ?? (Math.PI * 2.25);
-  ctx.beginPath();
-  ctx.arc(cx, cy, r - 8, startAngle, endAngle);
-  ctx.strokeStyle = '#1a2f50';
-  ctx.lineWidth = 6;
-  ctx.stroke();
-
-  // Arc coloré selon valeur
-  const pct = Math.max(0, Math.min(1, (opts.value - opts.min) / (opts.max - opts.min)));
-  const valAngle = startAngle + pct * (endAngle - startAngle);
-  if (pct > 0) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 8, startAngle, valAngle);
-    ctx.strokeStyle = opts.color || '#f59e0b';
-    ctx.lineWidth = 6;
-    ctx.stroke();
+/* ══════════════════════════════════════
+   CANVAS GAUGE
+══════════════════════════════════════ */
+function drawGauge(id, {value,min,max,unit,color,redFrom,displayVal,needleColor}) {
+  const c = document.getElementById(id); if(!c) return;
+  const ctx=c.getContext('2d'), S=c.width, cx=S/2, cy=S/2, r=S/2-3;
+  ctx.clearRect(0,0,S,S);
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle='#050d18'; ctx.fill();
+  ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=2; ctx.stroke();
+  const sa=Math.PI*.75, ea=Math.PI*2.25;
+  ctx.beginPath(); ctx.arc(cx,cy,r-7,sa,ea);
+  ctx.strokeStyle='#1a2f50'; ctx.lineWidth=5; ctx.stroke();
+  if(redFrom!=null){
+    const rp=(redFrom-min)/(max-min), ra=sa+rp*(ea-sa);
+    ctx.beginPath(); ctx.arc(cx,cy,r-7,ra,ea);
+    ctx.strokeStyle='rgba(127,29,29,.8)'; ctx.lineWidth=5; ctx.stroke();
   }
-
-  // Zone rouge (si définie)
-  if (opts.redFrom != null) {
-    const rPct = (opts.redFrom - opts.min) / (opts.max - opts.min);
-    const rAngle = startAngle + rPct * (endAngle - startAngle);
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 8, rAngle, endAngle);
-    ctx.strokeStyle = '#7f1d1d';
-    ctx.lineWidth = 6;
-    ctx.stroke();
+  const pct=Math.max(0,Math.min(1,(value-min)/(max-min)));
+  if(pct>0){
+    ctx.beginPath(); ctx.arc(cx,cy,r-7,sa,sa+pct*(ea-sa));
+    ctx.strokeStyle=color||'#f59e0b'; ctx.lineWidth=5; ctx.stroke();
   }
-
-  // Aiguille
-  const needleAngle = startAngle + pct * (endAngle - startAngle);
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(needleAngle);
-  ctx.beginPath();
-  ctx.moveTo(0, 4);
-  ctx.lineTo(r - 14, 0);
-  ctx.lineTo(0, -4);
-  ctx.closePath();
-  ctx.fillStyle = opts.needleColor || '#f59e0b';
-  ctx.fill();
+  const na=sa+pct*(ea-sa);
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(na);
+  ctx.beginPath(); ctx.moveTo(0,3); ctx.lineTo(r-11,0); ctx.lineTo(0,-3);
+  ctx.closePath(); ctx.fillStyle=needleColor||color||'#f59e0b'; ctx.fill();
   ctx.restore();
-
-  // Centre
-  ctx.beginPath();
-  ctx.arc(cx, cy, 5, 0, Math.PI*2);
-  ctx.fillStyle = opts.needleColor || '#f59e0b';
-  ctx.fill();
-
-  // Valeur texte
-  ctx.fillStyle = '#e2e8f0';
-  ctx.font = `bold ${Math.round(S*0.15)}px 'Consolas', monospace`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(opts.displayValue ?? Math.round(opts.value), cx, cy + r*0.35);
-
-  // Unité
-  ctx.fillStyle = '#64748b';
-  ctx.font = `${Math.round(S*0.09)}px 'Segoe UI', sans-serif`;
-  ctx.fillText(opts.unit || '', cx, cy + r*0.55);
+  ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2);
+  ctx.fillStyle=needleColor||color||'#f59e0b'; ctx.fill();
+  const dv = displayVal!=null?displayVal:Math.round(value);
+  ctx.fillStyle='#e2e8f0'; ctx.font=`bold ${Math.round(S*.14)}px Consolas,monospace`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(dv, cx, cy+r*.32);
+  ctx.fillStyle='#475569'; ctx.font=`${Math.round(S*.09)}px 'Segoe UI',sans-serif`;
+  ctx.fillText(unit||'', cx, cy+r*.52);
 }
 
-function renderInstruments() {
-  const ac = AIRCRAFT[currentAC];
-  const cluster = document.getElementById('instrument-cluster');
-  const indGrid = document.getElementById('indicators-grid');
+function redrawAll(){
+  const ac=AIRCRAFT[S.ac];
+  drawGauge('c-rpm',{value:S.rpm,min:0,max:ac.rpmMax,unit:'RPM',
+    color:S.rpm>ac.rpmTakeoff*.95?'#22c55e':'#f59e0b',redFrom:ac.rpmMax*.97,
+    displayVal:S.rpm>=1000?(S.rpm/1000).toFixed(1)+'k':S.rpm,needleColor:'#f59e0b'});
+  drawGauge('c-spd',{value:S.speed,min:0,max:ac.speeds.vne,unit:'km/h',color:'#3b82f6',
+    redFrom:ac.speeds.vne*.9,displayVal:Math.round(S.speed)});
+  drawGauge('c-alt',{value:S.altitude,min:0,max:10000,unit:'ft',color:'#a78bfa',
+    displayVal:S.altitude>=1000?(S.altitude/1000).toFixed(1)+'k':S.altitude});
+  drawGauge('c-oil',{value:S.oilTemp,min:0,max:130,unit:'°C',
+    color:S.oilTemp<50?'#64748b':S.oilTemp<100?'#22c55e':'#ef4444',redFrom:110,
+    displayVal:Math.round(S.oilTemp)});
+  const ft=document.getElementById('fuel-fill');
+  const fl=document.getElementById('fuel-tube');
+  if(ft){ ft.style.height=S.fuelLevel+'%'; ft.className='fuel-fill'+(S.fuelLevel<25?' low':''); }
 
-  // ── Cluster : tachymètre + badin + altimètre (communs) ──
-  cluster.innerHTML = `
-    <div class="instrument">
-      <canvas id="c-rpm" width="110" height="110"></canvas>
-      <div class="inst-label">Tachy · RPM</div>
-    </div>
-    <div class="instrument">
-      <canvas id="c-spd" width="100" height="100"></canvas>
-      <div class="inst-label">Badin · km/h</div>
-    </div>
-    <div class="instrument">
-      <canvas id="c-alt" width="90" height="90"></canvas>
-      <div class="inst-label">Altimètre · ft</div>
-    </div>
-    ${currentAC === 'dr400' ? `
-    <div class="instrument">
-      <canvas id="c-prs" width="85" height="85"></canvas>
-      <div class="inst-label">Pression ess · bar</div>
-    </div>
-    <div class="instrument">
-      <canvas id="c-vlt" width="85" height="85"></canvas>
-      <div class="inst-label">Voltage ECU · V</div>
-    </div>` : `
-    <div class="instrument">
-      <canvas id="c-oilT" width="85" height="85"></canvas>
-      <div class="inst-label">Temp. huile · °C</div>
-    </div>`}
-  `;
+  // Status strip
+  const strip=document.getElementById('status-strip');
+  strip.innerHTML=[
+    ['BAT',  S.batteryOn,   false],
+    ['MASTER',S.masterOn,   false],
+    ['FUEL', S.fuelOn,      false],
+    ['LANE A',S.laneA,      false],
+    ['LANE B',S.laneB,      false],
+    ['STROBE',S.strobeOn,   true],
+    [`XPDR ${S.xpdrCode}`, S.xpdrMode==='ALT', S.xpdrMode==='GND'],
+    ['ENG',  S.engineRunning,false],
+  ].map(([lbl,on,warn])=>`<span class="sp ${warn?'warn':on?'on':'off'}">${lbl}</span>`).join('');
 
-  // ── Indicateurs booléens ──
-  if (currentAC === 'dr400') {
-    indGrid.innerHTML = `
-      <div class="indicator ${instState.battery ? 'on' : 'off'}" id="ind-bat"><span class="indicator-dot"></span>Batterie</div>
-      <div class="indicator ${instState.fuel    ? 'on' : 'off'}" id="ind-fuel"><span class="indicator-dot"></span>Essence</div>
-      <div class="indicator ${instState.laneA   ? 'on' : 'off'}" id="ind-laneA"><span class="indicator-dot"></span>Lane A</div>
-      <div class="indicator ${instState.laneB   ? 'on' : 'off'}" id="ind-laneB"><span class="indicator-dot"></span>Lane B</div>
-      <div class="indicator ${instState.pump1   ? 'on' : 'off'}" id="ind-pump1"><span class="indicator-dot"></span>Pompe 1</div>
-      <div class="indicator ${instState.strobe  ? 'warn':'off'}" id="ind-strobe"><span class="indicator-dot"></span>Strobe</div>
-      <div class="indicator ${instState.xpdr==='ALT'?'on':instState.xpdr==='GND'?'warn':'off'}" id="ind-xpdr">
-        <span class="indicator-dot"></span>XPDR · ${instState.xpdr}
+  // Horamètre
+  const hm=document.getElementById('hm-wrap');
+  hm.style.display=S.batteryOn?'flex':'none';
+}
+
+/* ══════════════════════════════════════
+   HORAMÈTRE
+══════════════════════════════════════ */
+let hmInterval=null;
+function startHM(){ if(hmInterval) return; S.horameterStart=Date.now(); hmInterval=setInterval(updateHM,1000); }
+function updateHM(){
+  const el=document.getElementById('hm'); if(!el) return;
+  const secs=Math.floor((Date.now()-S.horameterStart)/1000);
+  const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
+  el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function stopHM(){ clearInterval(hmInterval); hmInterval=null; S.horameterStart=null; document.getElementById('hm').textContent='00:00:00'; }
+
+/* ══════════════════════════════════════
+   OIL TEMP AUTO-RISE
+══════════════════════════════════════ */
+function startOilHeating(){
+  if(S.oilTempTimer) return;
+  S.oilTempTimer=setInterval(()=>{
+    if(S.oilTemp<58){ S.oilTemp=Math.min(58, S.oilTemp+.5); redrawAll(); }
+    else clearInterval(S.oilTempTimer);
+  }, 1200);
+}
+
+/* ══════════════════════════════════════
+   RTDB CONTROLS — RENDER
+══════════════════════════════════════ */
+function renderCtrl(ctrl){
+  const z=document.getElementById('ctrl-zone');
+  const g=document.getElementById('ctrl-grid');
+  const t=document.getElementById('ctrl-zone-title');
+  let title='', html='';
+
+  if(ctrl==='prise'){
+    title='Phase — Prise en compte';
+    html=`
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Clé de contact</div>
+        <div class="key-slot ${S.keyInserted?'on':''}" id="ks" onclick="insertKey()" title="Insérer la clé">
+          ${S.keyInserted?'🔑':'🔒'}
+        </div>
+        <div class="ctrl-state">${S.keyInserted?'✓ Insérée':'Cliquer pour insérer'}</div>
       </div>
-      <div class="indicator" style="font-size:.65rem;color:var(--muted)">
-        Vr ${ac.speeds.vr} · Vim ${ac.speeds.vim}<br>Vom ${ac.speeds.vom} · App ${ac.speeds.app}
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Porte</div>
+        <div class="door ${S.doorClosed?'closed':''}" id="door-el" onclick="toggleDoor()" title="Fermer la porte">
+          ${S.doorClosed?'🔒':'🚪'}
+        </div>
+        <div class="ctrl-state">${S.doorClosed?'✓ Fermée':'Ouverte — cliquer'}</div>
       </div>
-    `;
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Frein park</div>
+        <div class="pbrake ${S.parkingBrake?'on':''}" id="pb-el" onclick="toggleBrake()" title="Frein parking">
+          ${S.parkingBrake?'🅿':'○'}
+        </div>
+        <div class="ctrl-state">${S.parkingBrake?'✓ Serré':'Relâché — cliquer'}</div>
+      </div>`;
+  }
+  else if(ctrl==='avant'||ctrl==='avant_ulm'){
+    title='Phase — Avant mise en route';
+    const showPin = S.ac==='ulm';
+    html=`
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Batterie</div>
+        <div class="tog ${S.batteryOn?'on':''}" id="bat-tog" onclick="toggleBattery()" title="Batterie ON/OFF"></div>
+        <div class="ctrl-state" id="bat-state">${S.batteryOn?'✓ ON':'OFF'}</div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Master SW</div>
+        <div class="master ${S.masterOn?'on':''}" id="master-el" onclick="toggleMaster()" title="Master Switch">
+          <div class="mlev"></div><div style="font-size:.55rem;color:${S.masterOn?'#22c55e':'#475569'}">MSW</div>
+        </div>
+        <div class="ctrl-state">${S.masterOn?'✓ ON':'OFF'}</div>
+      </div>
+      ${showPin?`
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Goupille Para.</div>
+        <div class="pin-btn ${S.parachutePinGone?'gone':''}" id="pin-el" onclick="removePin()" title="Enlever goupille">
+          ${S.parachutePinGone?'✓':'📌'}
+        </div>
+        <div class="ctrl-state">${S.parachutePinGone?'✓ Enlevée':'Cliquer'}</div>
+      </div>`:''}
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Lane A</div>
+        <div class="tog ${S.laneA?'on':''}" id="laneA-tog" onclick="toggleLane('A')" title="Lane A"></div>
+        <div class="ctrl-state">${S.laneA?'✓ ON':'OFF'}</div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Lane B</div>
+        <div class="tog ${S.laneB?'on':''}" id="laneB-tog" onclick="toggleLane('B')" title="Lane B"></div>
+        <div class="ctrl-state">${S.laneB?'✓ ON':'OFF'}</div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Strobe</div>
+        <div class="tog ${S.strobeOn?'on':''}" id="strobe-tog" onclick="toggleStrobe()" title="Strobe"></div>
+        <div class="ctrl-state">${S.strobeOn?'✓ ON':'OFF'}</div>
+      </div>`;
+  }
+  else if(ctrl==='mes'){
+    title='Phase — Mise en route';
+    html=`
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Robinet essence</div>
+        <div class="fvalve ${S.fuelOn?'on':''}" id="fv-el" onclick="toggleFuel()" title="Robinet essence">
+          <div class="fvalve-line"></div>
+        </div>
+        <div class="ctrl-state">${S.fuelOn?'✓ Ouvert':'Fermé — tourner'}</div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Démarreur</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;">
+          <button class="starter-btn ${S.engineRunning?'ok':''}" id="starter-el"
+            onmousedown="startEnginePress()" onmouseup="startEngineRelease()"
+            ontouchstart="startEnginePress()" ontouchend="startEngineRelease()">
+            ${S.engineRunning?'✓ ON':'TENIR\nAPPUYÉ'}
+          </button>
+          <div class="ctrl-state" id="starter-msg">${S.engineRunning?'Moteur en marche':!S.batteryOn?'⚠ Batterie OFF':!S.fuelOn?'⚠ Essence fermée':'Tenir appuyé 3 sec'}</div>
+        </div>
+      </div>`;
+  }
+  else if(ctrl==='radio'){
+    title='Phase — Radio & roulage';
+    html=`<div style="font-size:.78rem;color:#64748b;line-height:1.6">
+      📻 Les encarts radio sont dépliables dans la checklist ci-contre.<br>
+      <span style="color:#22c55e;font-size:.7rem">Ouvre l'encart sous l'item "Appel radio" ou "Transpondeur".</span>
+    </div>`;
+  }
+  else if(ctrl==='ptfixe'){
+    title='Phase — Point fixe';
+    html=`
+      <div class="ctrl-g" style="width:100%">
+        <div class="ctrl-lbl">Régime moteur</div>
+        <div class="rpm-slw">
+          <input type="range" class="rpm-sl" id="rpm-sl" min="0" max="${AIRCRAFT[S.ac].rpmMax}"
+            value="${Math.round(S.rpm)}" oninput="setRPMSlider(this.value)">
+          <div class="rpm-disp" id="rpm-disp-sl">${Math.round(S.rpm)} RPM</div>
+        </div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Lane A test</div>
+        <div class="lane-test">
+          <div class="lt-btn ${S.laneATestOff?'off-state':''}" onclick="testLane('A','off')" id="la-off-btn">LANE A OFF</div>
+          <div class="lt-btn" onclick="testLane('A','on')" id="la-on-btn">LANE A ON</div>
+        </div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Lane B test</div>
+        <div class="lane-test">
+          <div class="lt-btn ${S.laneBTestOff?'off-state':''}" onclick="testLane('B','off')" id="lb-off-btn">LANE B OFF</div>
+          <div class="lt-btn" onclick="testLane('B','on')" id="lb-on-btn">LANE B ON</div>
+        </div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Volets</div>
+        <div class="flaps-row">
+          <div class="flap-btn ${S.flaps===0?'active':''}" onclick="setFlaps(0)">0°</div>
+          <div class="flap-btn ${S.flaps===15?'active':''}" onclick="setFlaps(15)">15°</div>
+          <div class="flap-btn ${S.flaps===30?'active':''}" onclick="setFlaps(30)">30°</div>
+        </div>
+        <div class="ctrl-state">${S.flaps}° sortis</div>
+      </div>
+      <div class="ctrl-g">
+        <div class="ctrl-lbl">Transpondeur</div>
+        <div>
+          <div class="xpdr-disp" onclick="toggleXpdrKP()" id="xpdr-disp">${S.xpdrCode}</div>
+          <div class="xpdr-modes">
+            <div class="xm-btn ${S.xpdrMode==='OFF'?'active':''}" onclick="setXpdrMode('OFF')">OFF</div>
+            <div class="xm-btn ${S.xpdrMode==='GND'?'active':''}" onclick="setXpdrMode('GND')">GND</div>
+            <div class="xm-btn ${S.xpdrMode==='ALT'?'active':''}" onclick="setXpdrMode('ALT')">ALT</div>
+          </div>
+          <div class="xpdr-kp" id="xpdr-kp">
+            ${[1,2,3,4,5,6,7,0,'←','✓'].map(k=>`<div class="xk" onclick="xpdrKey('${k}')">${k}</div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }
+  else {
+    title='Instruments'; html='<div style="color:#475569;font-size:.78rem;text-align:center">Instruments actifs</div>';
+  }
+
+  t.textContent=title; g.innerHTML=html;
+
+  // RPM slider color update
+  const sl=document.getElementById('rpm-sl');
+  if(sl) sl.style.setProperty('--pct', (S.rpm/AIRCRAFT[S.ac].rpmMax*100)+'%');
+}
+
+/* ══════════════════════════════════════
+   ACTIONS RTDB
+══════════════════════════════════════ */
+function insertKey(){
+  S.keyInserted=true;
+  renderCtrl(currentPhaseCtrl());
+  autoCheckByRtdb('key');
+  showToast('🔑 Clé insérée');
+}
+function toggleDoor(){
+  S.doorClosed=!S.doorClosed;
+  renderCtrl(currentPhaseCtrl());
+  if(S.doorClosed) autoCheckByRtdb('door');
+}
+function toggleBrake(){
+  S.parkingBrake=!S.parkingBrake;
+  renderCtrl(currentPhaseCtrl());
+  if(S.parkingBrake) autoCheckByRtdb('brake');
+}
+function toggleBattery(){
+  if(!S.keyInserted){ showToast('⚠️ Insérez d\'abord la clé !','warn'); return; }
+  S.batteryOn=!S.batteryOn;
+  if(S.batteryOn){ startHM(); animInstruments(); } else { stopHM(); }
+  renderCtrl(currentPhaseCtrl()); redrawAll();
+  autoCheckByRtdb('battery');
+}
+function toggleMaster(){
+  if(!S.batteryOn){ showToast('⚠️ Batterie OFF !','warn'); return; }
+  S.masterOn=!S.masterOn;
+  if(S.masterOn){ S.altitude=620; S.speed=0; redrawAll(); }
+  renderCtrl(currentPhaseCtrl()); autoCheckByRtdb('master');
+}
+function toggleFuel(){
+  S.fuelOn=!S.fuelOn;
+  renderCtrl(currentPhaseCtrl()); redrawAll();
+  autoCheckByRtdb('fuelvalve');
+}
+function toggleLane(lane){
+  if(lane==='A'){ S.laneA=!S.laneA; autoCheckByRtdb('laneA'); }
+  else           { S.laneB=!S.laneB; autoCheckByRtdb('laneB'); }
+  renderCtrl(currentPhaseCtrl()); redrawAll();
+}
+function toggleStrobe(){
+  S.strobeOn=!S.strobeOn;
+  renderCtrl(currentPhaseCtrl()); redrawAll();
+  autoCheckByRtdb('strobe');
+}
+function removePin(){
+  if(S.parachutePinGone) return;
+  S.parachutePinGone=true;
+  renderCtrl(currentPhaseCtrl()); autoCheckByRtdb('pin');
+}
+
+let starterTimeout=null;
+function startEnginePress(){
+  if(S.engineRunning) return;
+  if(!S.batteryOn){ showToast('⚠️ Batterie OFF !','warn'); return; }
+  if(!S.fuelOn)   { showToast('⚠️ Robinet essence fermé !','warn'); return; }
+  const btn=document.getElementById('starter-el');
+  if(btn) btn.classList.add('pressing');
+  let t=0; const intv=setInterval(()=>{
+    t+=0.2; S.rpm=Math.min(1400, t/3*1400); redrawAll();
+    document.getElementById('rpm-disp-sl')?.textContent && (document.getElementById('rpm-disp-sl').textContent=Math.round(S.rpm)+' RPM');
+  },200);
+  starterTimeout=setTimeout(()=>{
+    clearInterval(intv); S.rpm=1400; S.engineRunning=true;
+    startOilHeating();
+    renderCtrl('mes'); redrawAll(); autoCheckByRtdb('starter');
+    showToast('✅ Moteur en marche !','ok');
+  },3000);
+  S._startIntv=intv;
+}
+function startEngineRelease(){
+  clearTimeout(starterTimeout); clearInterval(S._startIntv);
+  const btn=document.getElementById('starter-el');
+  if(btn) btn.classList.remove('pressing');
+  if(!S.engineRunning){ S.rpm=0; redrawAll(); document.getElementById('starter-msg').textContent='Tenir 3 secondes entières'; }
+}
+
+function setRPMSlider(val){
+  S.rpm=parseInt(val);
+  document.getElementById('rpm-disp-sl').textContent=S.rpm+' RPM';
+  const sl=document.getElementById('rpm-sl');
+  if(sl) sl.style.background=`linear-gradient(to right,#22c55e ${S.rpm/AIRCRAFT[S.ac].rpmMax*100}%,#1e3a5f ${S.rpm/AIRCRAFT[S.ac].rpmMax*100}%)`;
+  redrawAll();
+  checkRpmItems();
+}
+
+function checkRpmItems(){
+  const phase=AIRCRAFT[S.ac].phases[activePhase];
+  phase.items.forEach((item,ii)=>{
+    const key=`${phase.id}-${ii}`;
+    if(item.rtdb==='rpm_4000' && S.rpm>=3900 && !S.checked[key]) doCheck(phase.id,ii,true);
+    if(item.rtdb==='rpm_5200' && S.rpm>=5200 && !S.checked[key]) doCheck(phase.id,ii,true);
+    if(item.rtdb==='rpm_ralenti' && S.rpm>=1400 && S.rpm<=1900 && !S.checked[key]) doCheck(phase.id,ii,true);
+  });
+}
+
+function testLane(lane,action){
+  if(action==='off'){
+    if(lane==='A'){ S.laneATestOff=true; S.rpm=Math.max(0,S.rpm-280); }
+    else           { S.laneBTestOff=true; S.rpm=Math.max(0,S.rpm-250); }
+    autoCheckByRtdb(lane==='A'?'laneA_off':'laneB_off');
   } else {
-    indGrid.innerHTML = `
-      <div class="indicator ${instState.battery ? 'on' : 'off'}" id="ind-bat"><span class="indicator-dot"></span>Batterie</div>
-      <div class="indicator ${instState.fuel    ? 'on' : 'off'}" id="ind-fuel"><span class="indicator-dot"></span>Essence</div>
-      <div class="indicator ${instState.laneA   ? 'on' : 'off'}" id="ind-laneA"><span class="indicator-dot"></span>Lane A</div>
-      <div class="indicator ${instState.laneB   ? 'on' : 'off'}" id="ind-laneB"><span class="indicator-dot"></span>Lane B</div>
-      <div class="indicator ${instState.strobe  ? 'warn':'off'}" id="ind-strobe"><span class="indicator-dot"></span>Strobe</div>
-      <div class="indicator ${instState.xpdr==='ALT'?'on':'off'}" id="ind-xpdr">
-        <span class="indicator-dot"></span>XPDR · ${instState.xpdr}
-      </div>
-      <div class="indicator" style="font-size:.65rem;color:var(--muted)">
-        Vapp ${ac.speeds.app} · VFE ${ac.speeds.vfe??'—'}<br>Vi max ${ac.speeds.vim} km/h
-      </div>
-      <div class="indicator warn" style="font-size:.65rem">
-        <span class="indicator-dot"></span>Parachute — vérifier
-      </div>
-    `;
+    if(lane==='A'){ S.laneATestOff=false; S.rpm=Math.min(AIRCRAFT[S.ac].rpmMax,S.rpm+280); }
+    else           { S.laneBTestOff=false; S.rpm=Math.min(AIRCRAFT[S.ac].rpmMax,S.rpm+250); }
+    autoCheckByRtdb(lane==='A'?'laneA_on':'laneB_on');
   }
-
-  redrawGauges();
+  renderCtrl('ptfixe'); redrawAll();
 }
 
-function redrawGauges() {
-  const ac = AIRCRAFT[currentAC];
-  drawGauge('c-rpm', {
-    value: instState.rpm, min: 0, max: ac.rpmMax,
-    unit: 'RPM', color: instState.rpm > ac.rpmTakeoff * .95 ? '#22c55e' : '#f59e0b',
-    redFrom: ac.rpmMax * 0.95,
-    displayValue: instState.rpm >= 1000 ? (instState.rpm/1000).toFixed(1)+'k' : instState.rpm
+function setFlaps(deg){
+  S.flaps=deg;
+  renderCtrl('ptfixe'); redrawAll();
+  if(deg>0) autoCheckByRtdb('flaps');
+}
+
+function setXpdrMode(mode){
+  S.xpdrMode=mode;
+  renderCtrl('ptfixe'); redrawAll();
+  if(mode==='GND') autoCheckByRtdb('xpdr_gnd');
+  if(mode==='ALT'){ autoCheckByRtdb('xpdr_alt'); }
+}
+
+function toggleXpdrKP(){
+  const kp=document.getElementById('xpdr-kp');
+  if(kp) kp.classList.toggle('open');
+}
+
+function xpdrKey(k){
+  if(k==='←'){ S.xpdrCode=S.xpdrCode.slice(0,-1)||'0'; }
+  else if(k==='✓'){ document.getElementById('xpdr-kp')?.classList.remove('open'); }
+  else if(S.xpdrCode.length<4){ S.xpdrCode+=String(k); }
+  document.getElementById('xpdr-disp').textContent=S.xpdrCode;
+}
+
+function animInstruments(){
+  let t=0;
+  const intv=setInterval(()=>{
+    t+=0.1; const sv=Math.sin(t*3);
+    S.speed=Math.max(0,sv*15); S.altitude=600+sv*10;
+    redrawAll(); if(t>2){ S.speed=0; S.altitude=620; clearInterval(intv); redrawAll(); }
+  },80);
+}
+
+/* ══════════════════════════════════════
+   AUTO-CHECK via RTDB
+══════════════════════════════════════ */
+function autoCheckByRtdb(rtdbKey){
+  const phase=AIRCRAFT[S.ac].phases[activePhase];
+  phase.items.forEach((item,ii)=>{
+    if(item.rtdb===rtdbKey && item.autocheck && !S.checked[`${phase.id}-${ii}`])
+      doCheck(phase.id,ii,true);
   });
-  drawGauge('c-spd', {
-    value: instState.speed, min: 0, max: ac.speeds.vne || 200,
-    unit: 'km/h', color: '#3b82f6',
-    redFrom: (ac.speeds.vne || 200) * 0.9,
-    displayValue: Math.round(instState.speed)
+  // Check all phases
+  AIRCRAFT[S.ac].phases.forEach(p=>{
+    p.items.forEach((item,ii)=>{
+      if(item.rtdb===rtdbKey && item.autocheck && !S.checked[`${p.id}-${ii}`])
+        doCheck(p.id,ii,true);
+    });
   });
-  drawGauge('c-alt', {
-    value: instState.alt, min: 0, max: 10000,
-    unit: 'ft', color: '#a78bfa',
-    displayValue: instState.alt >= 1000 ? (instState.alt/1000).toFixed(1)+'k' : instState.alt
-  });
-  if (currentAC === 'dr400') {
-    drawGauge('c-prs', {
-      value: instState.pressure, min: 0, max: ac.pressureMax,
-      unit: 'bar', color: '#22c55e', redFrom: 3.5,
-      displayValue: instState.pressure.toFixed(1)
-    });
-    drawGauge('c-vlt', {
-      value: instState.voltage, min: 10, max: 15,
-      unit: 'V', color: '#f59e0b', redFrom: 14.5,
-      displayValue: instState.voltage.toFixed(1)
-    });
-  } else {
-    drawGauge('c-oilT', {
-      value: instState.oilTemp, min: 0, max: 130,
-      unit: '°C', color: '#f97316', redFrom: 110,
-      displayValue: Math.round(instState.oilTemp)
-    });
-  }
 }
 
-/* ═══════════════════════════════════
-   LOGIQUE INSTRUMENTS selon items
-   ═══════════════════════════════════ */
-function applyInstrumentEffect(inst, checked) {
-  const v = checked;
-  if (!inst) return;
-  switch(inst) {
-    case 'battery':    instState.battery = v; break;
-    case 'battery_off':instState.battery = !v; break;
-    case 'fuel':       instState.fuel = v; instState.pressure = v ? 3.0 : 0; break;
-    case 'fuel_off':   instState.fuel = !v; instState.pressure = 0; break;
-    case 'strobe':     instState.strobe = v; break;
-    case 'pump1':      instState.pump1 = v; break;
-    case 'pump_off':   instState.pump1 = false; break;
-    case 'laneAB':     instState.laneA = v; instState.laneB = v; break;
-    case 'laneAB_off': instState.laneA = false; instState.laneB = false; break;
-    case 'laneA_off':  instState.laneA = false; break;
-    case 'laneA_on':   instState.laneA = true; break;
-    case 'laneB_off':  instState.laneB = false; break;
-    case 'laneB_on':   instState.laneB = true; break;
-    case 'pressure':   instState.pressure = v ? 3.0 : 0; break;
-    case 'voltage':    instState.voltage = v ? 13.2 : 12.1; break;
-    case 'rpm_low':    instState.rpm = v ? 1400 : 0; break;
-    case 'rpm_2000':   instState.rpm = v ? 2000 : instState.rpm; break;
-    case 'rpm_2500':   instState.rpm = v ? 2500 : instState.rpm; break;
-    case 'rpm_3000':   instState.rpm = v ? 3000 : instState.rpm; break;
-    case 'rpm_4000':   instState.rpm = v ? 4000 : instState.rpm; break;
-    case 'rpm_5200':   instState.rpm = v ? 5200 : instState.rpm; break;
-    case 'xpdr_gnd':   instState.xpdr = v ? 'GND' : 'OFF'; break;
-    case 'xpdr_alt':   instState.xpdr = v ? 'ALT' : 'GND'; break;
-    case 'xpdr_stby':  instState.xpdr = v ? 'STBY' : 'ALT'; break;
-    case 'alt':        instState.alt = v ? 600 : 0; break;
-    case 'oil_temp':   instState.oilTemp = v ? 55 : 20; break;
-    case 'spd_80':     instState.speed = v ? 80 : 0; break;
-    case 'spd_110':    instState.speed = v ? 110 : 0; break;
-  }
-  renderInstruments();
+/* ══════════════════════════════════════
+   CHECKLIST LOGIC
+══════════════════════════════════════ */
+let activePhase=0;
+
+function currentPhaseCtrl(){
+  const p=AIRCRAFT[S.ac].phases[activePhase];
+  return p.ctrl||'default';
 }
 
-/* ═══════════════════════════════════
-   RENDU CHECKLIST
-   ═══════════════════════════════════ */
-function renderPhase(pi) {
-  const phase = AIRCRAFT[currentAC].phases[pi];
-  return `
-    <div class="phase-header">${phase.icon} ${phase.label}</div>
-    ${phase.items.map((item, ii) => {
-      const key = `${phase.id}-${ii}`;
-      const isChecked = !!checked[key];
-      return `<label class="checklist-item ${isChecked?'checked':''} ${item.critical?'item-critical':''}" id="ci-${key}">
-        <input type="checkbox" ${isChecked?'checked':''} onchange="toggleItem('${phase.id}',${ii},this.checked,'${item.inst||''}')">
-        <span class="item-action">${item.a}</span>
-        <span class="item-value">${item.v}</span>
-      </label>`;
-    }).join('')}
-    <div class="done-banner ${phase.items.every((_,ii)=>checked[`${phase.id}-${ii}`]) ? 'show':''}" id="done-${phase.id}">
-      ✅ Phase <strong>${phase.label}</strong> terminée !
-    </div>
-  `;
-}
-
-function buildUI() {
-  const ac = AIRCRAFT[currentAC];
-  // PDF links
-  document.getElementById('pdf-links').innerHTML = `
-    <a class="pdf-btn" href="#" onclick="return false">📄 ${ac.pdfName} — déposer dans notes/ pour accéder</a>
-  `;
-  // Phase tabs
-  const tabs = document.getElementById('phase-tabs');
-  tabs.innerHTML = ac.phases.map((p,i) => `
-    <button class="phase-tab ${i===activePhase?'active':''} ${
-      p.items.every((_,ii)=>checked[`${p.id}-${ii}`]) ? 'done':''
-    }" onclick="switchPhase(${i})">${p.icon} ${p.label}</button>
-  `).join('');
+function buildUI(){
+  document.getElementById('rtdb-id').textContent=AIRCRAFT[S.ac].id;
+  const phases=AIRCRAFT[S.ac].phases;
+  // Tabs
+  document.getElementById('ph-tabs').innerHTML=phases.map((p,i)=>`
+    <button class="ph-tab ${i===activePhase?'active':''} ${phases[i].items.every((_,ii)=>S.checked[`${p.id}-${ii}`])?'done':''}"
+      onclick="switchPhase(${i})">${p.icon} ${p.label}</button>`).join('');
   // Content
-  document.getElementById('checklist-content').innerHTML = renderPhase(activePhase);
+  const phase=phases[activePhase];
+  document.getElementById('cl-content').innerHTML=`
+    <div class="ph-hdr">${phase.icon} ${phase.label}</div>
+    ${phase.items.map((item,ii)=>{
+      const key=`${phase.id}-${ii}`;
+      const locked=item.lock && !S.keyInserted && !S.checked[key];
+      const checked=!!S.checked[key];
+      return `<label class="cl-item ${checked?'checked':''} ${item.critical?'critical':''} ${locked?'locked':''}" id="ci-${key}">
+        <input type="checkbox" ${checked?'checked':''} ${locked?'disabled':''}
+          onchange="doCheck('${phase.id}',${ii},this.checked)">
+        <span class="ia">${item.a}${locked?' 🔒':''}</span>
+        <span class="iv">${item.v}</span>
+      </label>
+      ${item.radio?radioEncart(key,item.radio):''}`;
+    }).join('')}
+    <div class="done-bn ${phase.items.every((_,ii)=>S.checked[`${phase.id}-${ii}`])?'show':''}" id="done-${phase.id}">
+      ✅ Phase <strong>${phase.label}</strong> terminée !
+    </div>`;
+
+  renderCtrl(currentPhaseCtrl());
   updateProgress();
-  renderInstruments();
+  redrawAll();
 }
 
-function switchPhase(pi) {
-  activePhase = pi;
-  buildUI();
+function radioEncart(key, radio){
+  return `<div class="radio-enc">
+    <button class="radio-tog" onclick="toggleRadio('r-${key}')">📻 Phraséologie radio — cliquer</button>
+    <div class="radio-body" id="r-${key}">
+      ${radio.msg.map(m=>`<div class="rl ${m.t==='p'?'rp':m.t==='c'?'rt':'ri'}">
+        ${m.t==='p'?'👨‍✈️':m.t==='c'?'🗼':'ℹ️'} ${m.tx}</div>`).join('')}
+    </div>
+  </div>`;
 }
 
-function toggleItem(phaseId, ii, val, inst) {
-  checked[`${phaseId}-${ii}`] = val;
-  const el = document.getElementById(`ci-${phaseId}-${ii}`);
-  if (el) el.classList.toggle('checked', val);
-  applyInstrumentEffect(inst, val);
-  const phase = AIRCRAFT[currentAC].phases.find(p => p.id === phaseId);
-  if (phase) {
-    const allDone = phase.items.every((_,i) => checked[`${phaseId}-${i}`]);
-    const banner = document.getElementById(`done-${phaseId}`);
-    if (banner) banner.classList.toggle('show', allDone);
+function toggleRadio(id){
+  document.getElementById(id)?.classList.toggle('open');
+}
+
+function switchPhase(pi){
+  activePhase=pi; buildUI();
+}
+
+function doCheck(phaseId,ii,val){
+  S.checked[`${phaseId}-${ii}`]=val;
+  const el=document.getElementById(`ci-${phaseId}-${ii}`);
+  if(el) el.classList.toggle('checked',val);
+  const phase=AIRCRAFT[S.ac].phases.find(p=>p.id===phaseId);
+  if(phase){
+    const allDone=phase.items.every((_,i)=>S.checked[`${phaseId}-${i}`]);
+    const bn=document.getElementById(`done-${phaseId}`);
+    if(bn) bn.classList.toggle('show',allDone);
   }
   updateProgress();
-  // Mettre à jour les onglets
-  document.querySelectorAll('.phase-tab').forEach((t,i) => {
-    const p = AIRCRAFT[currentAC].phases[i];
-    t.classList.toggle('done', p.items.every((_,ii)=>checked[`${p.id}-${ii}`]));
+  document.querySelectorAll('.ph-tab').forEach((t,i)=>{
+    const p=AIRCRAFT[S.ac].phases[i];
+    t.classList.toggle('done',p.items.every((_,ii)=>S.checked[`${p.id}-${ii}`]));
   });
+  // Fuel level decreases slightly as phases are checked
+  const total=AIRCRAFT[S.ac].phases.reduce((a,p)=>a+p.items.length,0);
+  const done=Object.values(S.checked).filter(Boolean).length;
+  S.fuelLevel=Math.max(75,100-(done/total)*8);
+  redrawAll();
 }
 
-function updateProgress() {
-  let total = 0, done = 0;
-  AIRCRAFT[currentAC].phases.forEach(p => {
-    p.items.forEach((_, ii) => { total++; if (checked[`${p.id}-${ii}`]) done++; });
-  });
-  const pct = total ? Math.round(done/total*100) : 0;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent = `${done} / ${total} items cochés`;
-  document.getElementById('progress-pct').textContent = pct + '%';
+function updateProgress(){
+  let total=0,done=0;
+  AIRCRAFT[S.ac].phases.forEach(p=>p.items.forEach((_,ii)=>{total++;if(S.checked[`${p.id}-${ii}`])done++;}));
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-lbl').textContent=`${done} / ${total} items cochés`;
+  document.getElementById('prog-pct').textContent=pct+'%';
 }
 
-function selectAircraft(ac) {
-  currentAC = ac;
-  activePhase = 0;
-  initState();
-  document.getElementById('btn-dr400').classList.toggle('active', ac==='dr400');
-  document.getElementById('btn-ulm').classList.toggle('active', ac==='ulm');
+function selectAC(ac){
+  S.ac=ac; activePhase=0; resetState();
+  document.getElementById('btn-dr400').classList.toggle('active',ac==='dr400');
+  document.getElementById('btn-ulm').classList.toggle('active',ac==='ulm');
   buildUI();
 }
 
-function resetAll() {
-  if (!confirm('Réinitialiser toute la checklist ?')) return;
-  initState();
-  buildUI();
+function resetState(){
+  S.keyInserted=false; S.doorClosed=false; S.parkingBrake=false;
+  S.batteryOn=false; S.fuelOn=false; S.masterOn=false;
+  S.parachutePinGone=false; S.strobeOn=false;
+  S.laneA=false; S.laneB=false;
+  S.engineRunning=false; S.engineStarting=false;
+  S.rpm=0; S.oilTemp=20; S.fuelLevel=100;
+  S.speed=0; S.altitude=600;
+  S.flaps=0; S.xpdrMode='OFF'; S.xpdrCode='7000';
+  S.laneATestOff=false; S.laneBTestOff=false;
+  S.checked={};
+  clearInterval(S.oilTempTimer); S.oilTempTimer=null;
+  stopHM();
+}
+
+function resetAll(){
+  if(!confirm('Réinitialiser toute la checklist et le tableau de bord ?')) return;
+  activePhase=0; resetState(); buildUI();
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+function showToast(msg,type='info'){
+  let t=document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:.6rem 1.25rem;border-radius:8px;font-size:.85rem;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:opacity .3s;border:1px solid'; document.body.appendChild(t); }
+  t.style.borderColor=type==='warn'?'#f59e0b':type==='ok'?'#22c55e':'#3b82f6';
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._to); t._to=setTimeout(()=>t.style.opacity='0',2500);
 }
 
 // Init
-initState();
 buildUI();
 </script>
 </body>
