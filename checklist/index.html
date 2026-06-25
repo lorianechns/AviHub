@@ -106,6 +106,15 @@
 .rp{color:#f59e0b;}.rt{color:#22c55e;}.ri{color:#475569;font-style:italic;}
 .reset-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.38rem 1rem;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .13s;margin-top:1rem;font-family:inherit;}
 .reset-btn:hover{border-color:rgba(255,255,255,.2);color:var(--text);}
+
+/* ── Jauge RPM verticale ── */
+.rpm-vbar-wrap{display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+.rpm-vbar{width:22px;height:96px;background:#050d18;border:1px solid #1e3355;border-radius:4px;position:relative;overflow:hidden;flex-shrink:0;}
+.rpm-vbar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:0 0 3px 3px;transition:height .25s,background .25s;}
+.rpm-vbar-tick{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.15);}
+.rpm-vbar-tick-lbl{position:absolute;right:calc(100% + 4px);font-size:.44rem;color:#334155;white-space:nowrap;transform:translateY(50%);}
+.rpm-vbar-val{font-family:'Courier New',monospace;font-size:.72rem;color:#f59e0b;font-weight:700;text-align:center;}
+.rpm-vbar-unit{font-size:.52rem;color:#475569;text-align:center;}
 </style>
 </head>
 <body>
@@ -117,7 +126,8 @@
     <li><a href="../histoire.html">Histoire</a></li>
     <li><a href="../bia/index.html">Connaissances</a></li>
     <li><a href="index.html" class="active">Checklist</a></li>
-    <li><a href="../notes/index.html">Mes notes</a></li>
+    <li><a href="../aeroports/index.html">Aéroports</a></li>
+    <li><a href="../notes/index.html">Notes</a></li>
   </ul>
 </nav>
 
@@ -150,7 +160,19 @@
     </div>
 
     <div class="gauges-row">
-      <div class="gw"><canvas id="c-rpm" width="96" height="96"></canvas><div class="gl">RPM</div></div>
+      <div class="gw">
+        <div class="rpm-vbar-wrap">
+          <div class="rpm-vbar" id="rpm-vbar">
+            <div class="rpm-vbar-fill" id="rpm-vbar-fill" style="height:0%;background:#475569;"></div>
+            <!-- ticks at idle/cruise/to/redline -->
+            <div class="rpm-vbar-tick" style="bottom:23.3%"><span class="rpm-vbar-tick-lbl">1400</span></div>
+            <div class="rpm-vbar-tick" style="bottom:66.7%"><span class="rpm-vbar-tick-lbl">4000</span></div>
+            <div class="rpm-vbar-tick" style="bottom:86.7%"><span class="rpm-vbar-tick-lbl">5200</span></div>
+          </div>
+          <div class="rpm-vbar-val" id="rpm-vbar-val">0</div>
+          <div class="rpm-vbar-unit">RPM</div>
+        </div>
+      </div>
       <div class="gw"><canvas id="c-spd" width="82" height="82"></canvas><div class="gl">Badin km/h</div></div>
       <div class="gw"><canvas id="c-alt" width="74" height="74"></canvas><div class="gl">Alti ft</div></div>
       <div class="gw"><canvas id="c-oil" width="70" height="70"></canvas><div class="gl">Huile °C</div></div>
@@ -437,7 +459,17 @@ function drawGauge(id,{value,min,max,unit,color,redFrom}){
 
 function redrawAll(){
   const ac=AC[S.ac];
-  drawGauge('c-rpm',{value:S.rpm,min:0,max:ac.rpmMax,unit:'RPM',color:S.rpm>ac.rpmTo*.95?'#22c55e':'#f59e0b',redFrom:ac.rpmMax*.97});
+  // Jauge RPM verticale
+  const rpmPct=Math.max(0,Math.min(100,S.rpm/ac.rpmMax*100));
+  const rpmColor=S.rpm===0?'#1e3355':S.rpm>=ac.rpmMax*.97?'#ef4444':S.rpm>=ac.rpmTo?'#f59e0b':S.rpm>=4000?'#22c55e':S.rpm>=1400?'#3b82f6':'#475569';
+  const fill=document.getElementById('rpm-vbar-fill');
+  const val=document.getElementById('rpm-vbar-val');
+  if(fill){fill.style.height=rpmPct+'%';fill.style.background=rpmColor;fill.style.boxShadow=S.rpm>0?`0 0 8px ${rpmColor}66`:'';}
+  if(val){val.textContent=S.rpm>=1000?(S.rpm/1000).toFixed(1)+'k':String(S.rpm);val.style.color=rpmColor;}
+  // Ticks adapt to current aircraft max
+  const ticks=document.querySelectorAll('.rpm-vbar-tick');
+  const tickRpms=[1400,4000,ac.rpmTo];
+  ticks.forEach((t,i)=>{if(tickRpms[i])t.style.bottom=(tickRpms[i]/ac.rpmMax*100)+'%';});
   drawGauge('c-spd',{value:S.speed,min:0,max:300,unit:'km/h',color:'#3b82f6',redFrom:270});
   drawGauge('c-alt',{value:S.altitude,min:0,max:10000,unit:'ft',color:'#a78bfa'});
   drawGauge('c-oil',{value:S.oilTemp,min:0,max:130,unit:'°C',color:S.oilTemp<50?'#475569':S.oilTemp<100?'#22c55e':'#ef4444',redFrom:110});
