@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Aéroports — AviHub</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+html,body{height:100%;overflow:hidden;}
+.aero-wrap{display:grid;grid-template-columns:1fr 320px;height:calc(100vh - 54px);}
+#map{height:100%;z-index:1;}
+
+/* Sidebar */
+.sidebar{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sb-top{padding:1rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-title{font-size:.9rem;font-weight:600;margin-bottom:.75rem;color:var(--text);}
+.sb-search{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:.5rem .75rem;border-radius:7px;font-size:.82rem;outline:none;font-family:inherit;}
+.sb-search:focus{border-color:rgba(59,130,246,.5);}
+.sb-search::placeholder{color:var(--muted);}
+.region-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.6rem;}
+.rtab{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:.25rem .6rem;border-radius:5px;font-size:.7rem;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;}
+.rtab:hover{color:var(--text);border-color:rgba(255,255,255,.15);}
+.rtab.active{background:rgba(59,130,246,.1);border-color:#3b82f6;color:#93c5fd;}
+
+/* Results list */
+.results-list{flex:1;overflow-y:auto;padding:.5rem;}
+.ac-item{padding:.55rem .7rem;border-radius:7px;cursor:pointer;transition:background .1s;border:1px solid transparent;}
+.ac-item:hover{background:var(--bg3);}
+.ac-item.selected{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3);}
+.ac-icao{font-family:'Courier New',monospace;font-size:.75rem;font-weight:700;color:var(--accent);}
+.ac-name{font-size:.82rem;font-weight:500;color:var(--text);margin:.1rem 0;}
+.ac-ville{font-size:.72rem;color:var(--muted);}
+.ac-type-badge{display:inline-block;font-size:.6rem;padding:.1rem .4rem;border-radius:999px;font-weight:600;margin-left:.4rem;}
+.t-large{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.25);}
+.t-medium{background:rgba(245,158,11,.08);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+.t-small{background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.25);}
+
+/* Detail panel */
+.detail-panel{padding:1rem;border-top:1px solid var(--border);flex-shrink:0;display:none;}
+.detail-panel.show{display:block;}
+.dp-icao{font-family:'Courier New',monospace;font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.05em;}
+.dp-iata{font-size:.85rem;color:var(--muted);font-family:'Courier New',monospace;margin-left:.5rem;}
+.dp-name{font-size:1rem;font-weight:600;color:var(--text);margin:.3rem 0 .15rem;}
+.dp-ville{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.75rem;}
+.dp-cell{background:var(--bg3);border-radius:6px;padding:.4rem .6rem;}
+.dp-cell-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.15rem;}
+.dp-cell-val{font-size:.82rem;font-weight:500;color:var(--text);}
+.vac-btn{display:flex;align-items:center;gap:.5rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--accent);padding:.5rem .85rem;border-radius:7px;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .15s;width:100%;justify-content:center;margin-bottom:.4rem;}
+.vac-btn:hover{background:rgba(245,158,11,.18);border-color:var(--accent);}
+.sia-btn{display:flex;align-items:center;gap:.5rem;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:.45rem .85rem;border-radius:7px;text-decoration:none;font-size:.78rem;font-weight:500;transition:all .15s;width:100%;justify-content:center;}
+.sia-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15);}
+
+/* Map controls overlay */
+.map-zoom-btns{position:absolute;top:68px;left:10px;z-index:1000;display:flex;flex-direction:column;gap:.3rem;}
+.mz-btn{background:rgba(11,15,26,.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);color:var(--muted);padding:.4rem .7rem;border-radius:6px;font-size:.72rem;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .12s;font-family:inherit;text-align:left;}
+.mz-btn:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
+
+/* Count badge */
+.count-badge{font-size:.65rem;color:var(--muted);padding:.1rem 0;margin-top:.3rem;}
+
+/* Leaflet popup override */
+.leaflet-popup-content-wrapper{background:#111827!important;border:1px solid #1e3355!important;border-radius:8px!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important;color:#e2e8f0!important;}
+.leaflet-popup-tip{background:#111827!important;}
+.leaflet-popup-content{margin:.65rem .85rem!important;font-family:Inter,system-ui,sans-serif!important;font-size:.82rem!important;line-height:1.5!important;}
+.pop-icao{font-family:'Courier New',monospace;font-size:.9rem;font-weight:700;color:#f59e0b;}
+.pop-name{font-weight:500;margin:.2rem 0;}
+.pop-type{font-size:.7rem;color:#64748b;}
+
+@media(max-width:700px){.aero-wrap{grid-template-columns:1fr;grid-template-rows:55vh 1fr;overflow:auto;}html,body{overflow:auto;}.sidebar{border-left:none;border-top:1px solid var(--border);}.map-zoom-btns{display:none;}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="../actualites.html">Actualités</a></li>
+    <li><a href="../histoire.html">Histoire</a></li>
+    <li><a href="../bia/index.html">Connaissances</a></li>
+    <li><a href="../checklist/index.html">Checklist</a></li>
+    <li><a href="index.html" class="active">Aéroports</a></li>
+    <li><a href="../notes/index.html">Notes</a></li>
+  </ul>
+</nav>
+
+<div class="aero-wrap">
+  <!-- Map -->
+  <div style="position:relative;">
+    <div id="map"></div>
+    <div class="map-zoom-btns">
+      <button class="mz-btn" onclick="zoomTo('france')">🇫🇷 France</button>
+      <button class="mz-btn" onclick="zoomTo('europe')">🌍 Europe</button>
+      <button class="mz-btn" onclick="zoomTo('ameriques')">🌎 Amériques</button>
+      <button class="mz-btn" onclick="zoomTo('asie')">🌏 Asie-Pacifique</button>
+      <button class="mz-btn" onclick="zoomTo('afrique')">🌍 Afrique</button>
+      <button class="mz-btn" onclick="zoomTo('monde')">🌐 Monde entier</button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="sb-title">🛬 Recherche aéroport</div>
+      <input class="sb-search" id="search" placeholder="ICAO, IATA, nom, ville…" oninput="filterAirports(this.value)">
+      <div class="region-tabs">
+        <button class="rtab active" onclick="filterRegion('all',this)">Tous</button>
+        <button class="rtab" onclick="filterRegion('FR',this)">🇫🇷 France</button>
+        <button class="rtab" onclick="filterRegion('EU',this)">Europe</button>
+        <button class="rtab" onclick="filterRegion('US',this)">Amériques</button>
+        <button class="rtab" onclick="filterRegion('AS',this)">Asie</button>
+        <button class="rtab" onclick="filterRegion('AF',this)">Afrique</button>
+      </div>
+      <div class="count-badge" id="count-badge">— aéroports</div>
+    </div>
+
+    <div class="results-list" id="results-list"></div>
+
+    <div class="detail-panel" id="detail-panel">
+      <div style="display:flex;align-items:baseline;gap:.25rem;">
+        <span class="dp-icao" id="dp-icao"></span>
+        <span class="dp-iata" id="dp-iata"></span>
+      </div>
+      <div class="dp-name" id="dp-name"></div>
+      <div class="dp-ville" id="dp-ville"></div>
+      <div class="dp-grid">
+        <div class="dp-cell"><div class="dp-cell-lbl">Type</div><div class="dp-cell-val" id="dp-type"></div></div>
+        <div class="dp-cell"><div class="dp-cell-lbl">Altitude</div><div class="dp-cell-val" id="dp-alt"></div></div>
+        <div class="dp-cell"><div class="dp-cell-lbl">Coordonnées</div><div class="dp-cell-val" id="dp-coords"></div></div>
+        <div class="dp-cell"><div class="dp-cell-lbl">Pays</div><div class="dp-cell-val" id="dp-pays"></div></div>
+      </div>
+      <a class="vac-btn" id="dp-vac" href="#" target="_blank" rel="noopener">📄 Carte VAC — SIA</a>
+      <a class="sia-btn" id="dp-sia" href="https://www.sia.aviation-civile.gouv.fr/" target="_blank" rel="noopener">🔗 SIA Aviation Civile</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ══════════════════════════════════════════
+   DONNÉES AÉROPORTS
+══════════════════════════════════════════ */
+const AIRPORTS = [
+  // ── FRANCE grandes plates-formes ──
+  {icao:'LFPG',iata:'CDG',name:'Paris Charles de Gaulle',ville:'Roissy-en-France',lat:49.0097,lng:2.5478,type:'large',pays:'FR',alt:119,region:'EU'},
+  {icao:'LFPO',iata:'ORY',name:'Paris Orly',ville:'Orly',lat:48.7233,lng:2.3794,type:'large',pays:'FR',alt:89,region:'EU'},
+  {icao:'LFPB',iata:'LBG',name:'Paris Le Bourget',ville:'Le Bourget',lat:48.9694,lng:2.4414,type:'medium',pays:'FR',alt:66,region:'EU'},
+  {icao:'LFLL',iata:'LYS',name:'Lyon-Saint Exupéry',ville:'Lyon',lat:45.7256,lng:5.0811,type:'large',pays:'FR',alt:250,region:'EU'},
+  {icao:'LFML',iata:'MRS',name:'Marseille Provence',ville:'Marignane',lat:43.4393,lng:5.2214,type:'large',pays:'FR',alt:23,region:'EU'},
+  {icao:'LFMN',iata:'NCE',name:'Nice Côte d\'Azur',ville:'Nice',lat:43.6584,lng:7.2159,type:'large',pays:'FR',alt:4,region:'EU'},
+  {icao:'LFBO',iata:'TLS',name:'Toulouse-Blagnac',ville:'Toulouse',lat:43.6292,lng:1.3638,type:'large',pays:'FR',alt:152,region:'EU'},
+  {icao:'LFBD',iata:'BOD',name:'Bordeaux-Mérignac',ville:'Bordeaux',lat:44.8283,lng:-0.7153,type:'large',pays:'FR',alt:49,region:'EU'},
+  {icao:'LFRS',iata:'NTE',name:'Nantes Atlantique',ville:'Nantes',lat:47.1532,lng:-1.6108,type:'large',pays:'FR',alt:27,region:'EU'},
+  {icao:'LFST',iata:'SXB',name:'Strasbourg',ville:'Entzheim',lat:48.5383,lng:7.6283,type:'large',pays:'FR',alt:154,region:'EU'},
+  {icao:'LFRB',iata:'BES',name:'Brest Bretagne',ville:'Brest',lat:48.4479,lng:-4.4185,type:'large',pays:'FR',alt:99,region:'EU'},
+  {icao:'LFSB',iata:'BSL',name:'Bâle-Mulhouse EuroAirport',ville:'Saint-Louis',lat:47.5896,lng:7.5299,type:'large',pays:'FR',alt:270,region:'EU'},
+  {icao:'LFBZ',iata:'BIQ',name:'Biarritz Pays Basque',ville:'Anglet',lat:43.4683,lng:-1.5232,type:'medium',pays:'FR',alt:75,region:'EU'},
+  {icao:'LFLY',iata:'LYN',name:'Lyon Bron',ville:'Bron',lat:45.7272,lng:4.9443,type:'medium',pays:'FR',alt:201,region:'EU'},
+  {icao:'LFRN',iata:'RNS',name:'Rennes',ville:'Rennes',lat:48.0697,lng:-1.7347,type:'medium',pays:'FR',alt:38,region:'EU'},
+  {icao:'LFQQ',iata:'LIL',name:'Lille-Lesquin',ville:'Lille',lat:50.5636,lng:3.0894,type:'large',pays:'FR',alt:48,region:'EU'},
+  {icao:'LFJL',iata:'ETZ',name:'Metz-Nancy Lorraine',ville:'Metz',lat:48.9822,lng:6.2517,type:'medium',pays:'FR',alt:265,region:'EU'},
+  {icao:'LFKB',iata:'BIA',name:'Bastia Poretta',ville:'Bastia',lat:42.5527,lng:9.4838,type:'medium',pays:'FR',alt:25,region:'EU'},
+  {icao:'LFKJ',iata:'AJA',name:'Ajaccio Napoléon Bonaparte',ville:'Ajaccio',lat:41.9236,lng:8.8029,type:'medium',pays:'FR',alt:5,region:'EU'},
+  {icao:'LFMP',iata:'PGF',name:'Perpignan-Rivesaltes',ville:'Perpignan',lat:42.7402,lng:2.8706,type:'medium',pays:'FR',alt:44,region:'EU'},
+  {icao:'LFMT',iata:'MPL',name:'Montpellier Méditerranée',ville:'Montpellier',lat:43.5762,lng:3.9631,type:'large',pays:'FR',alt:5,region:'EU'},
+  {icao:'LFRK',iata:'CFR',name:'Caen Carpiquet',ville:'Caen',lat:49.1733,lng:-0.4500,type:'medium',pays:'FR',alt:78,region:'EU'},
+  {icao:'LFMV',iata:'AVN',name:'Avignon-Caumont',ville:'Avignon',lat:43.9073,lng:4.9018,type:'medium',pays:'FR',alt:38,region:'EU'},
+  {icao:'LFBT',iata:'LDE',name:'Tarbes-Lourdes-Pyrénées',ville:'Tarbes',lat:43.1787,lng:-0.0064,type:'medium',pays:'FR',alt:384,region:'EU'},
+  {icao:'LFBA',iata:'AGF',name:'Agen La Garenne',ville:'Agen',lat:44.1747,lng:0.5906,type:'small',pays:'FR',alt:62,region:'EU'},
+  {icao:'LFJR',iata:'ANE',name:'Angers-Loire',ville:'Angers',lat:47.5603,lng:-0.3122,type:'small',pays:'FR',alt:59,region:'EU'},
+  {icao:'LFMT',iata:'MPL',name:'Montpellier',ville:'Montpellier',lat:43.5762,lng:3.9631,type:'large',pays:'FR',alt:5,region:'EU'},
+  {icao:'LFKC',iata:'CLY',name:'Calvi Sainte-Catherine',ville:'Calvi',lat:42.5247,lng:8.7932,type:'medium',pays:'FR',alt:64,region:'EU'},
+  {icao:'LFKF',iata:'FSC',name:'Figari Sud-Corse',ville:'Figari',lat:41.5006,lng:9.0978,type:'medium',pays:'FR',alt:25,region:'EU'},
+  {icao:'LFMK',iata:'CCF',name:'Carcassonne',ville:'Carcassonne',lat:43.2160,lng:2.3063,type:'medium',pays:'FR',alt:132,region:'EU'},
+  {icao:'LFGJ',iata:'DLE',name:'Dole-Tavaux',ville:'Dole',lat:47.0390,lng:5.4273,type:'small',pays:'FR',alt:645,region:'EU'},
+  {icao:'LFLN',iata:'SYT',name:'Saint-Yan',ville:'Saint-Yan',lat:46.4125,lng:4.0132,type:'small',pays:'FR',alt:796,region:'EU'},
+  {icao:'LFMH',iata:'EBU',name:'Saint-Étienne Loire',ville:'Saint-Étienne',lat:45.5406,lng:4.2964,type:'medium',pays:'FR',alt:404,region:'EU'},
+  {icao:'LFOU',iata:'CVF',name:'Courchevel Altiport',ville:'Courchevel',lat:45.3967,lng:6.6347,type:'small',pays:'FR',alt:2009,region:'EU'},
+  {icao:'LFLJ',iata:'MFX',name:'Megève-Mont Blanc',ville:'Megève',lat:45.8208,lng:6.6522,type:'small',pays:'FR',alt:1399,region:'EU'},
+  {icao:'LFTH',iata:'TLN',name:'Toulon-Hyères',ville:'Hyères',lat:43.0973,lng:6.1460,type:'medium',pays:'FR',alt:7,region:'EU'},
+  {icao:'LFLC',iata:'CFE',name:'Clermont-Ferrand Auvergne',ville:'Clermont-Ferrand',lat:45.7867,lng:3.1692,type:'medium',pays:'FR',alt:329,region:'EU'},
+  {icao:'LFLD',iata:'',name:'Bourges',ville:'Bourges',lat:47.0581,lng:2.3703,type:'small',pays:'FR',alt:166,region:'EU'},
+  {icao:'LFBS',iata:'',name:'Biscarrosse',ville:'Biscarrosse',lat:44.3594,lng:-1.1631,type:'small',pays:'FR',alt:16,region:'EU'},
+  {icao:'LFBC',iata:'',name:'Cazaux',ville:'La Teste-de-Buch',lat:44.5333,lng:-1.1250,type:'medium',pays:'FR',alt:18,region:'EU'},
+  // ── EUROPE ──
+  {icao:'EGLL',iata:'LHR',name:'London Heathrow',ville:'Londres',lat:51.4775,lng:-0.4614,type:'large',pays:'GB',alt:25,region:'EU'},
+  {icao:'EGKK',iata:'LGW',name:'London Gatwick',ville:'Gatwick',lat:51.1481,lng:-0.1903,type:'large',pays:'GB',alt:62,region:'EU'},
+  {icao:'EDDM',iata:'MUC',name:'Munich',ville:'Munich',lat:48.3537,lng:11.7750,type:'large',pays:'DE',alt:453,region:'EU'},
+  {icao:'EDDF',iata:'FRA',name:'Frankfurt am Main',ville:'Francfort',lat:50.0333,lng:8.5706,type:'large',pays:'DE',alt:111,region:'EU'},
+  {icao:'EHAM',iata:'AMS',name:'Amsterdam Schiphol',ville:'Amsterdam',lat:52.3086,lng:4.7639,type:'large',pays:'NL',alt:-3,region:'EU'},
+  {icao:'LEMD',iata:'MAD',name:'Madrid Barajas',ville:'Madrid',lat:40.4719,lng:-3.5605,type:'large',pays:'ES',alt:610,region:'EU'},
+  {icao:'LEBL',iata:'BCN',name:'Barcelona El Prat',ville:'Barcelone',lat:41.2971,lng:2.0785,type:'large',pays:'ES',alt:4,region:'EU'},
+  {icao:'LIRF',iata:'FCO',name:'Rome Fiumicino',ville:'Rome',lat:41.8003,lng:12.2389,type:'large',pays:'IT',alt:4,region:'EU'},
+  {icao:'LIML',iata:'LIN',name:'Milan Linate',ville:'Milan',lat:45.4481,lng:9.2797,type:'medium',pays:'IT',alt:107,region:'EU'},
+  {icao:'LSZH',iata:'ZRH',name:'Zurich',ville:'Zurich',lat:47.4647,lng:8.5492,type:'large',pays:'CH',alt:432,region:'EU'},
+  {icao:'LSGG',iata:'GVA',name:'Genève Cointrin',ville:'Genève',lat:46.2381,lng:6.1089,type:'large',pays:'CH',alt:430,region:'EU'},
+  {icao:'EBBR',iata:'BRU',name:'Bruxelles National',ville:'Bruxelles',lat:50.9014,lng:4.4844,type:'large',pays:'BE',alt:56,region:'EU'},
+  {icao:'LPPT',iata:'LIS',name:'Lisbonne Humberto Delgado',ville:'Lisbonne',lat:38.7813,lng:-9.1359,type:'large',pays:'PT',alt:113,region:'EU'},
+  {icao:'LGAV',iata:'ATH',name:'Athènes Eleftherios Venizelos',ville:'Athènes',lat:37.9364,lng:23.9475,type:'large',pays:'GR',alt:96,region:'EU'},
+  {icao:'EKCH',iata:'CPH',name:'Copenhague Kastrup',ville:'Copenhague',lat:55.6180,lng:12.6561,type:'large',pays:'DK',alt:17,region:'EU'},
+  {icao:'ESSA',iata:'ARN',name:'Stockholm Arlanda',ville:'Stockholm',lat:59.6519,lng:17.9186,type:'large',pays:'SE',alt:42,region:'EU'},
+  {icao:'UUEE',iata:'SVO',name:'Moscou Cheremetievo',ville:'Moscou',lat:55.9726,lng:37.4146,type:'large',pays:'RU',alt:190,region:'EU'},
+  // ── AMÉRIQUES ──
+  {icao:'KJFK',iata:'JFK',name:'New York John F. Kennedy',ville:'New York',lat:40.6413,lng:-73.7781,type:'large',pays:'US',alt:4,region:'US'},
+  {icao:'KLAX',iata:'LAX',name:'Los Angeles International',ville:'Los Angeles',lat:33.9425,lng:-118.4081,type:'large',pays:'US',alt:38,region:'US'},
+  {icao:'KORD',iata:'ORD',name:'Chicago O\'Hare',ville:'Chicago',lat:41.9742,lng:-87.9073,type:'large',pays:'US',alt:201,region:'US'},
+  {icao:'KATL',iata:'ATL',name:'Atlanta Hartsfield-Jackson',ville:'Atlanta',lat:33.6407,lng:-84.4277,type:'large',pays:'US',alt:313,region:'US'},
+  {icao:'KMIA',iata:'MIA',name:'Miami International',ville:'Miami',lat:25.7959,lng:-80.2870,type:'large',pays:'US',alt:9,region:'US'},
+  {icao:'CYYZ',iata:'YYZ',name:'Toronto Pearson',ville:'Toronto',lat:43.6772,lng:-79.6306,type:'large',pays:'CA',alt:173,region:'US'},
+  {icao:'SBGR',iata:'GRU',name:'São Paulo Guarulhos',ville:'São Paulo',lat:-23.4356,lng:-46.4731,type:'large',pays:'BR',alt:750,region:'US'},
+  {icao:'SAEZ',iata:'EZE',name:'Buenos Aires Ezeiza',ville:'Buenos Aires',lat:-34.8222,lng:-58.5358,type:'large',pays:'AR',alt:20,region:'US'},
+  {icao:'MMMX',iata:'MEX',name:'Mexico Ciudad de Mexico',ville:'Mexico',lat:19.4363,lng:-99.0721,type:'large',pays:'MX',alt:2230,region:'US'},
+  // ── ASIE-PACIFIQUE ──
+  {icao:'RJTT',iata:'HND',name:'Tokyo Haneda',ville:'Tokyo',lat:35.5533,lng:139.7811,type:'large',pays:'JP',alt:6,region:'AS'},
+  {icao:'RJAA',iata:'NRT',name:'Tokyo Narita',ville:'Narita',lat:35.7720,lng:140.3929,type:'large',pays:'JP',alt:43,region:'AS'},
+  {icao:'ZGGG',iata:'CAN',name:'Guangzhou Baiyun',ville:'Guangzhou',lat:23.3924,lng:113.2990,type:'large',pays:'CN',alt:15,region:'AS'},
+  {icao:'ZBAA',iata:'PEK',name:'Pékin Capital',ville:'Pékin',lat:40.0799,lng:116.6031,type:'large',pays:'CN',alt:35,region:'AS'},
+  {icao:'VHHH',iata:'HKG',name:'Hong Kong',ville:'Lantau',lat:22.3080,lng:113.9185,type:'large',pays:'HK',alt:9,region:'AS'},
+  {icao:'WSSS',iata:'SIN',name:'Singapour Changi',ville:'Singapour',lat:1.3644,lng:103.9915,type:'large',pays:'SG',alt:7,region:'AS'},
+  {icao:'YSSY',iata:'SYD',name:'Sydney Kingsford Smith',ville:'Sydney',lat:-33.9461,lng:151.1772,type:'large',pays:'AU',alt:6,region:'AS'},
+  {icao:'YMML',iata:'MEL',name:'Melbourne',ville:'Melbourne',lat:-37.6733,lng:144.8430,type:'large',pays:'AU',alt:132,region:'AS'},
+  {icao:'VIDP',iata:'DEL',name:'New Delhi Indira Gandhi',ville:'New Delhi',lat:28.5665,lng:77.1031,type:'large',pays:'IN',alt:237,region:'AS'},
+  {icao:'OMDB',iata:'DXB',name:'Dubaï International',ville:'Dubaï',lat:25.2528,lng:55.3644,type:'large',pays:'AE',alt:19,region:'AS'},
+  // ── AFRIQUE ──
+  {icao:'FAOR',iata:'JNB',name:'Johannesburg O.R. Tambo',ville:'Johannesburg',lat:-26.1392,lng:28.2460,type:'large',pays:'ZA',alt:1694,region:'AF'},
+  {icao:'HECA',iata:'CAI',name:'Le Caire',ville:'Le Caire',lat:30.1219,lng:31.4056,type:'large',pays:'EG',alt:116,region:'AF'},
+  {icao:'GMMN',iata:'CMN',name:'Casablanca Mohammed V',ville:'Casablanca',lat:33.3675,lng:-7.5900,type:'large',pays:'MA',alt:656,region:'AF'},
+  {icao:'DAAG',iata:'ALG',name:'Alger Houari Boumediene',ville:'Alger',lat:36.6910,lng:3.2154,type:'large',pays:'DZ',alt:82,region:'AF'},
+  {icao:'DTTA',iata:'TUN',name:'Tunis-Carthage',ville:'Tunis',lat:36.8510,lng:10.2272,type:'large',pays:'TN',alt:22,region:'AF'},
+  {icao:'DNMM',iata:'LOS',name:'Lagos Murtala Muhammed',ville:'Lagos',lat:6.5774,lng:3.3212,type:'large',pays:'NG',alt:38,region:'AF'},
+  {icao:'HAAB',iata:'ADD',name:'Addis Abeba Bole',ville:'Addis Abeba',lat:8.9779,lng:38.7993,type:'large',pays:'ET',alt:2334,region:'AF'},
+];
+
+/* ══════════════════════════════════════════
+   CARTE LEAFLET
+══════════════════════════════════════════ */
+const map = L.map('map', {zoomControl:true}).setView([46.5, 2.5], 6);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; OpenStreetMap &copy; CartoDB',
+  maxZoom:19
+}).addTo(map);
+
+// Custom icon
+function makeIcon(type) {
+  const colors = {large:'#f59e0b', medium:'#3b82f6', small:'#64748b'};
+  const sizes  = {large:[18,18],   medium:[15,15],   small:[12,12]};
+  const c = colors[type]||colors.small;
+  const [w,h] = sizes[type]||sizes.small;
+  return L.divIcon({
+    html:`<div style="width:${w}px;height:${h}px;background:${c};border:2px solid rgba(255,255,255,.3);border-radius:50%;box-shadow:0 0 8px ${c}88;"></div>`,
+    iconSize:[w,h], iconAnchor:[w/2,h/2], popupAnchor:[0,-(h/2+4)],
+    className:'',
+  });
+}
+
+const markers = {};
+const layerGroups = {large:L.layerGroup(), medium:L.layerGroup(), small:L.layerGroup()};
+Object.values(layerGroups).forEach(lg=>lg.addTo(map));
+
+AIRPORTS.forEach(a=>{
+  const m = L.marker([a.lat,a.lng], {icon:makeIcon(a.type)});
+  m.bindPopup(`<div class="pop-icao">${a.icao}${a.iata?' / '+a.iata:''}</div><div class="pop-name">${a.name}</div><div class="pop-type">${a.ville} · ${typeLabel(a.type)} · ${a.alt}ft AMSL</div>`);
+  m.on('click', ()=>showDetail(a));
+  layerGroups[a.type]?.addTo(map);
+  layerGroups[a.type || 'small'].addLayer(m);
+  markers[a.icao] = {marker:m, data:a};
+});
+
+/* ══════════════════════════════════════════
+   SIDEBAR & FILTRES
+══════════════════════════════════════════ */
+let currentRegion = 'all';
+let currentSearch = '';
+let selectedICAO  = null;
+
+function typeLabel(t){return t==='large'?'Grande plate-forme':t==='medium'?'Aérodrome moyen':'Aérodrome local';}
+
+function filteredAirports(){
+  return AIRPORTS.filter(a=>{
+    const matchRegion = currentRegion==='all'
+      || (currentRegion==='FR'&&a.pays==='FR')
+      || (currentRegion==='EU'&&a.region==='EU'&&a.pays!=='FR')
+      || (currentRegion==='US'&&a.region==='US')
+      || (currentRegion==='AS'&&a.region==='AS')
+      || (currentRegion==='AF'&&a.region==='AF');
+    const q = currentSearch.toLowerCase();
+    const matchSearch = !q || a.icao.toLowerCase().includes(q)||a.iata.toLowerCase().includes(q)||a.name.toLowerCase().includes(q)||a.ville.toLowerCase().includes(q);
+    return matchRegion && matchSearch;
+  }).sort((a,b)=>{
+    const order={large:0,medium:1,small:2};
+    return order[a.type]-order[b.type]||a.name.localeCompare(b.name);
+  });
+}
+
+function renderList(){
+  const list = filteredAirports();
+  document.getElementById('count-badge').textContent = `${list.length} aéroport${list.length>1?'s':''}`;
+  document.getElementById('results-list').innerHTML = list.map(a=>`
+    <div class="ac-item ${selectedICAO===a.icao?'selected':''}" onclick="selectAirport('${a.icao}')">
+      <div style="display:flex;align-items:center;gap:.4rem;">
+        <span class="ac-icao">${a.icao}</span>
+        ${a.iata?`<span style="font-size:.65rem;color:var(--muted);font-family:'Courier New',monospace">${a.iata}</span>`:''}
+        <span class="ac-type-badge t-${a.type}">${a.type==='large'?'Grand':a.type==='medium'?'Moyen':'Local'}</span>
+      </div>
+      <div class="ac-name">${a.name}</div>
+      <div class="ac-ville">📍 ${a.ville} · ${a.pays} · ${a.alt} ft</div>
+    </div>`).join('');
+}
+
+function filterRegion(r, btn){
+  currentRegion=r;
+  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function filterAirports(q){
+  currentSearch=q;
+  renderList();
+}
+
+function selectAirport(icao){
+  selectedICAO=icao;
+  const a=AIRPORTS.find(x=>x.icao===icao);
+  if(!a)return;
+  renderList();
+  showDetail(a);
+  map.setView([a.lat,a.lng],10,{animate:true});
+  markers[icao]?.marker.openPopup();
+}
+
+function showDetail(a){
+  selectedICAO=a.icao;
+  document.getElementById('dp-icao').textContent=a.icao;
+  document.getElementById('dp-iata').textContent=a.iata?`/ ${a.iata}`:'';
+  document.getElementById('dp-name').textContent=a.name;
+  document.getElementById('dp-ville').textContent=`📍 ${a.ville}`;
+  document.getElementById('dp-type').textContent=typeLabel(a.type);
+  document.getElementById('dp-alt').textContent=`${a.alt} ft AMSL`;
+  document.getElementById('dp-coords').textContent=`${a.lat.toFixed(4)}° N\n${a.lng.toFixed(4)}° E`;
+  document.getElementById('dp-pays').textContent=a.pays;
+  // VAC / SIA links
+  const vacBtn=document.getElementById('dp-vac');
+  const siaBtn=document.getElementById('dp-sia');
+  if(a.pays==='FR'){
+    // Lien vers l'AIP France sur le portail SIA pour cet aérodrome
+    vacBtn.href=`https://www.sia.aviation-civile.gouv.fr/dvd/eAIP_01_NOV_2024/FRANCE/AIRAC-2024-10-31/html/eAIP/FR-AD-2.${a.icao}-fr-FR.html`;
+    vacBtn.textContent='📄 Carte VAC — SIA AIP France';
+    vacBtn.style.display='flex';
+    siaBtn.href='https://www.sia.aviation-civile.gouv.fr/';
+    siaBtn.textContent='🔗 Portail SIA Aviation Civile';
+  } else {
+    vacBtn.href=`https://skyvector.com/airport/${a.icao}`;
+    vacBtn.textContent='📄 Charts — SkyVector';
+    vacBtn.style.display='flex';
+    siaBtn.href=`https://ourairports.com/airports/${a.icao}/`;
+    siaBtn.textContent='🔗 OurAirports.com';
+  }
+  document.getElementById('detail-panel').classList.add('show');
+  renderList();
+}
+
+/* ══════════════════════════════════════════
+   ZOOM RÉGIONS
+══════════════════════════════════════════ */
+const REGIONS={
+  france:  [[41.3,  -5.1],[51.1, 9.6]],
+  europe:  [[34.5, -11.0],[71.5,40.0]],
+  ameriques:[[-56,-120],[72,-30]],
+  asie:    [[-47, 60],[72,180]],
+  afrique: [[-35,-20],[37, 55]],
+  monde:   [[-85,-180],[85,180]],
+};
+function zoomTo(r){ map.fitBounds(REGIONS[r]); }
+
+/* Init */
+renderList();
+</script>
+</body>
+</html>
