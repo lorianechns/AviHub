@@ -9,89 +9,143 @@
 <body>
 
 <nav>
-  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <a class="nav-logo" href="index.html">✈ AviHub</a>
   <ul class="nav-links">
-    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="index.html">Accueil</a></li>
     <li><a href="actualites.html" class="active">Actualités</a></li>
-    <li><a href="../histoire.html">Histoire</a></li>
-    <li><a href="../bia/index.html">Fiches BIA</a></li>
-    <li><a href="../checklist/dr400.html">Checklist DR400</a></li>
-    <li><a href="../notes/index.html">Mes notes</a></li>
+    <li><a href="histoire.html">Histoire</a></li>
+    <li><a href="bia/index.html">Fiches BIA</a></li>
+    <li><a href="checklist/index.html">Checklist</a></li>
+    <li><a href="notes/index.html">Mes notes</a></li>
   </ul>
 </nav>
 
 <div class="container">
   <div class="page-title">📰 Actualités aéronautiques</div>
-  <div class="page-subtitle">Flux RSS agrégés en temps réel depuis les principales sources aviation</div>
+  <div class="page-subtitle">Flux RSS en temps réel — clique sur un article pour l'ouvrir</div>
 
-  <!-- Filtres par source -->
-  <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.5rem;" id="filtres">
+  <!-- Filtres -->
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;" id="filtres">
     <button class="filtre-btn active" data-source="all">Toutes</button>
-    <button class="filtre-btn" data-source="aerobuzz">Aerobuzz</button>
-    <button class="filtre-btn" data-source="avweb">AvWeb</button>
-    <button class="filtre-btn" data-source="aerocontact">Aérocontact</button>
+    <button class="filtre-btn" data-source="aerobuzz">🇫🇷 Aerobuzz</button>
+    <button class="filtre-btn" data-source="avweb">🇺🇸 AvWeb</button>
+    <button class="filtre-btn" data-source="aerocontact">🇫🇷 Aérocontact</button>
+    <button class="filtre-btn" data-source="avherald">✈ AvHerald</button>
   </div>
+
+  <div id="status-bar" style="font-size:.8rem;color:var(--muted);margin-bottom:1rem;"></div>
 
   <div id="news-container" class="grid grid-2">
     <div class="loading" style="grid-column:1/-1">
-      <div class="spinner"></div>Chargement des actualités…
+      <div class="spinner"></div>Chargement des flux RSS…
     </div>
   </div>
 </div>
 
 <style>
 .filtre-btn {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: .35rem .85rem;
-  border-radius: 999px;
-  font-size: .8rem;
-  cursor: pointer;
-  transition: all .15s;
+  background:var(--bg2);border:1px solid var(--border);color:var(--muted);
+  padding:.35rem .85rem;border-radius:999px;font-size:.8rem;cursor:pointer;transition:all .15s;
 }
-.filtre-btn:hover { border-color: var(--accent2); color: var(--text); }
-.filtre-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight:600; }
+.filtre-btn:hover{border-color:var(--accent2);color:var(--text);}
+.filtre-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600;}
+.card-img{width:100%;border-radius:6px;margin-bottom:.75rem;max-height:160px;object-fit:cover;}
+.source-tag{
+  display:inline-block;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--accent);margin-bottom:.5rem;font-weight:600;
+}
 </style>
 
 <script>
 const SOURCES = [
   {
     id: 'aerobuzz',
-    label: 'Aerobuzz.fr',
+    label: '🇫🇷 Aerobuzz.fr',
     url: 'https://www.aerobuzz.fr/feed/',
-    count: 8
+    count: 10,
+    siteUrl: 'https://www.aerobuzz.fr'
   },
   {
     id: 'avweb',
-    label: 'AvWeb',
+    label: '🇺🇸 AvWeb',
     url: 'https://www.avweb.com/feed/',
-    count: 6
+    count: 8,
+    siteUrl: 'https://www.avweb.com'
   },
   {
     id: 'aerocontact',
-    label: 'Aérocontact',
+    label: '🇫🇷 Aérocontact',
     url: 'https://www.aerocontact.com/flux-rss/actualites-aero.xml',
-    count: 6
+    count: 8,
+    siteUrl: 'https://www.aerocontact.com'
+  },
+  {
+    id: 'avherald',
+    label: '✈ Aviation Herald',
+    url: 'https://avherald.com/feed/rss.xml',
+    count: 6,
+    siteUrl: 'https://avherald.com'
   }
+];
+
+// Proxies CORS à essayer dans l'ordre
+const PROXIES = [
+  url => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=12`,
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
 ];
 
 let allArticles = [];
 let activeFilter = 'all';
 
+function stripHtml(html) {
+  return (html || '').replace(/<[^>]+>/g, '').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g,' ').trim();
+}
+
+function formatDate(str) {
+  if (!str) return '';
+  try {
+    return new Date(str).toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric'});
+  } catch { return str; }
+}
+
+async function fetchViaRss2Json(src) {
+  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=${src.count}&api_key=`;
+  const r = await fetch(apiUrl, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const d = await r.json();
+  if (d.status !== 'ok' || !d.items?.length) throw new Error('No items');
+  return d.items.map(item => ({
+    title: item.title,
+    link: item.link,
+    description: stripHtml(item.description || item.content || ''),
+    pubDate: item.pubDate,
+    thumbnail: item.thumbnail || item.enclosure?.link || '',
+    _sourceId: src.id,
+    _sourceLabel: src.label,
+    _siteUrl: src.siteUrl
+  }));
+}
+
+async function fetchSource(src) {
+  try {
+    return await fetchViaRss2Json(src);
+  } catch(e) {
+    console.warn(`${src.id} failed:`, e.message);
+    return [];
+  }
+}
+
 function renderCard(item) {
-  const desc = (item.description || '').replace(/<[^>]+>/g, '').replace(/&[a-z]+;/gi,'').trim();
-  const date = new Date(item.pubDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-  const img = item.thumbnail || item.enclosure?.link || '';
   return `
-    <div class="card" data-source="${item._sourceId}">
-      <a href="${item.link}" target="_blank" rel="noopener">
-        ${img ? `<img src="${img}" alt="" style="width:100%;border-radius:6px;margin-bottom:.75rem;max-height:160px;object-fit:cover;">` : ''}
-        <div class="card-source">${item._sourceLabel}</div>
-        <div class="card-title">${item.title}</div>
-        <div class="card-desc">${desc.slice(0, 200)}${desc.length > 200 ? '…' : ''}</div>
-        <div class="card-date">${date}</div>
-      </a>
+    <div class="card" data-source="${item._sourceId}" style="cursor:pointer" onclick="window.open('${item.link}','_blank','noopener')">
+      ${item.thumbnail ? `<img class="card-img" src="${item.thumbnail}" alt="" onerror="this.style.display='none'">` : ''}
+      <div class="source-tag">${item._sourceLabel}</div>
+      <div class="card-title">${item.title}</div>
+      <div class="card-desc">${(item.description||'').slice(0,200)}${(item.description||'').length>200?'…':''}</div>
+      <div class="card-date" style="display:flex;justify-content:space-between;align-items:center;margin-top:.75rem">
+        <span>${formatDate(item.pubDate)}</span>
+        <span style="color:var(--accent2);font-size:.75rem">Lire l'article →</span>
+      </div>
     </div>
   `;
 }
@@ -100,33 +154,61 @@ function renderArticles() {
   const container = document.getElementById('news-container');
   const filtered = activeFilter === 'all' ? allArticles : allArticles.filter(a => a._sourceId === activeFilter);
   if (filtered.length === 0) {
-    container.innerHTML = `<div class="loading" style="grid-column:1/-1;color:var(--muted)">Aucun article pour cette source.</div>`;
+    container.innerHTML = `<div class="loading" style="grid-column:1/-1;color:var(--muted)">
+      <div style="font-size:2rem;margin-bottom:.5rem">📭</div>
+      Aucun article pour cette source actuellement.<br>
+      <span style="font-size:.75rem">Clique sur "Toutes" pour voir l'ensemble des articles.</span>
+    </div>`;
     return;
   }
   container.innerHTML = filtered.map(renderCard).join('');
 }
 
-async function fetchSource(src) {
-  const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=${src.count}`;
-  const r = await fetch(apiUrl);
-  const d = await r.json();
-  return (d.items || []).map(item => ({
-    ...item,
-    _sourceId: src.id,
-    _sourceLabel: src.label
-  }));
+// Liens directs vers les sites si aucun article ne charge
+function showFallbackLinks() {
+  const container = document.getElementById('news-container');
+  if (allArticles.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column:1/-1">
+        <div style="text-align:center;padding:1.5rem;color:var(--muted);margin-bottom:1.5rem;font-size:.85rem">
+          ⚠️ Le chargement automatique est limité (RSS CORS). Clique directement sur les sources :
+        </div>
+        <div class="grid grid-2">
+          ${SOURCES.map(s => `
+            <a href="${s.siteUrl}" target="_blank" rel="noopener" class="card" style="text-decoration:none;display:block">
+              <div class="card-source">${s.label}</div>
+              <div class="card-title">Visiter ${s.label.replace(/[^a-zA-Z.]/g,'').trim()} →</div>
+              <div class="card-desc" style="margin-top:.5rem">${s.siteUrl}</div>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
 }
 
 async function loadAll() {
+  const statusBar = document.getElementById('status-bar');
+  statusBar.textContent = 'Chargement en cours…';
+
   const results = await Promise.allSettled(SOURCES.map(fetchSource));
   allArticles = results
     .filter(r => r.status === 'fulfilled')
     .flatMap(r => r.value)
     .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-  renderArticles();
+
+  const loaded = results.filter(r => r.status === 'fulfilled' && r.value.length > 0).length;
+  statusBar.textContent = loaded > 0
+    ? `✓ ${allArticles.length} articles chargés depuis ${loaded} source${loaded>1?'s':''}`
+    : '';
+
+  if (allArticles.length > 0) {
+    renderArticles();
+  } else {
+    showFallbackLinks();
+  }
 }
 
-// Filtres
 document.getElementById('filtres').addEventListener('click', e => {
   const btn = e.target.closest('.filtre-btn');
   if (!btn) return;
