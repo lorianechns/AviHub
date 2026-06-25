@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checklist — AviHub</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* ── Sélecteur appareil ── */
+    .aircraft-selector {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .aircraft-btn {
+      flex: 1; min-width: 220px; background: var(--bg2); border: 2px solid var(--border);
+      color: var(--muted); padding: 1rem 1.25rem; border-radius: var(--radius);
+      cursor: pointer; transition: all .2s; text-align: left;
+    }
+    .aircraft-btn:hover { border-color: var(--accent2); color: var(--text); }
+    .aircraft-btn.active { border-color: var(--accent); background: var(--bg3); color: var(--text); }
+    .aircraft-btn .ac-reg { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+    .aircraft-btn .ac-name { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+
+    /* ── Tableau de bord ── */
+    .cockpit-panel {
+      background: #060d1a;
+      border: 2px solid #1e3a5f;
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start;
+    }
+    .instrument-cluster {
+      display: flex; gap: 1rem; flex-wrap: wrap; flex: 1; justify-content: center;
+    }
+    .instrument {
+      display: flex; flex-direction: column; align-items: center; gap: .4rem;
+      position: relative;
+    }
+    .instrument canvas { border-radius: 50%; }
+    .inst-label {
+      font-size: .65rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .08em; text-align: center;
+    }
+    /* Indicateurs booléens (lane A/B, pompes…) */
+    .indicators-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .5rem;
+      min-width: 180px;
+    }
+    .indicator {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 6px; padding: .4rem .6rem;
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .72rem; color: var(--muted);
+      transition: all .3s;
+    }
+    .indicator.on  { background: #14532d; border-color: #22c55e; color: #22c55e; }
+    .indicator.warn{ background: #78350f; border-color: var(--accent); color: var(--accent); }
+    .indicator.off { background: #1f1010; border-color: #7f1d1d; color: #ef4444; }
+    .indicator-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: currentColor; flex-shrink: 0;
+    }
+
+    /* ── Phases & checklist ── */
+    .phase-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .phase-tab {
+      background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+      padding: .35rem .85rem; border-radius: 6px; cursor: pointer;
+      font-size: .78rem; transition: all .15s; white-space: nowrap;
+    }
+    .phase-tab:hover { border-color: var(--accent2); color: var(--text); }
+    .phase-tab.active { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 600; }
+    .phase-tab.done   { background: #14532d; border-color: #22c55e; color: #22c55e; }
+
+    .checklist-item {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: .55rem .75rem; border-radius: 6px; margin-bottom: .3rem;
+      cursor: pointer; transition: background .1s; font-size: .86rem;
+    }
+    .checklist-item:hover { background: var(--bg3); }
+    .checklist-item.checked { opacity: .45; text-decoration: line-through; }
+    .checklist-item input[type=checkbox] {
+      accent-color: #22c55e; width: 15px; height: 15px;
+      flex-shrink: 0; margin-top: 2px; cursor: pointer;
+    }
+    .item-action { flex: 1; color: var(--text); }
+    .item-value  { color: var(--accent); font-size: .78rem; white-space: nowrap; }
+    .item-critical { border-left: 2px solid #ef4444; padding-left: .5rem; }
+
+    .phase-header {
+      font-size: .75rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--accent); font-weight: 700; margin-bottom: .75rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .progress-bar { height: 5px; background: var(--bg3); border-radius: 3px; margin-bottom: 1.5rem; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), #22c55e); border-radius: 3px; transition: width .3s; }
+    .progress-row { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-bottom: .4rem; }
+
+    .done-banner {
+      display: none; background: linear-gradient(135deg,#14532d,#166534);
+      border: 1px solid #22c55e; border-radius: var(--radius);
+      padding: .75rem 1rem; text-align: center; font-size: .9rem; margin-top: .75rem;
+    }
+    .done-banner.show { display: block; }
+
+    .checklist-reset {
+      display: block; margin: 1rem auto 0; background: var(--bg3);
+      border: 1px solid var(--border); color: var(--muted); padding: .45rem 1.5rem;
+      border-radius: 6px; cursor: pointer; font-size: .82rem; transition: all .15s;
+    }
+    .checklist-reset:hover { border-color: var(--accent2); color: var(--text); }
+
+    /* PDF button */
+    .pdf-btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+      padding: .4rem 1rem; border-radius: 6px; font-size: .8rem; cursor: pointer;
+      text-decoration: none; transition: all .15s; margin-bottom: 1rem;
+    }
+    .pdf-btn:hover { border-color: var(--accent2); color: var(--text); }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html">✈ AviHub</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Accueil</a></li>
+    <li><a href="../actualites.html">Actualités</a></li>
+    <li><a href="../histoire.html">Histoire</a></li>
+    <li><a href="../bia/index.html">Fiches BIA</a></li>
+    <li><a href="index.html" class="active">Checklist</a></li>
+    <li><a href="../notes/index.html">Mes notes</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="page-title">🛩️ Checklists interactives</div>
+  <div class="page-subtitle">Sélectionne l'appareil — instruments animés en temps réel</div>
+
+  <!-- Sélecteur d'appareil -->
+  <div class="aircraft-selector">
+    <button class="aircraft-btn active" onclick="selectAircraft('dr400')" id="btn-dr400">
+      <div class="ac-reg">F-GORP</div>
+      <div style="font-size:.95rem;font-weight:700;margin:.2rem 0">DR400-120 ROTAX</div>
+      <div class="ac-name">Robin Aircraft · Lycoming ROTAX 912 · 4 places</div>
+    </button>
+    <button class="aircraft-btn" onclick="selectAircraft('ulm')" id="btn-ulm">
+      <div class="ac-reg">F-JKJZ</div>
+      <div style="font-size:.95rem;font-weight:700;margin:.2rem 0">Super Guépard Voyage</div>
+      <div class="ac-name">ULM biplace · Rotax · Parachute de secours</div>
+    </button>
+  </div>
+
+  <!-- Liens PDF -->
+  <div id="pdf-links"></div>
+
+  <!-- Tableau de bord -->
+  <div class="cockpit-panel" id="cockpit-panel">
+    <div class="instrument-cluster" id="instrument-cluster"></div>
+    <div class="indicators-grid" id="indicators-grid"></div>
+  </div>
+
+  <!-- Barre de progression globale -->
+  <div class="progress-row">
+    <span id="progress-label">0 / 0 items cochés</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0"></div></div>
+
+  <!-- Onglets phases -->
+  <div class="phase-tabs" id="phase-tabs"></div>
+
+  <!-- Contenu checklist -->
+  <div id="checklist-content"></div>
+
+  <button class="checklist-reset" onclick="resetAll()">↺ Réinitialiser</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DONNÉES CHECKLISTS (issues des PDFs officiels)
+   ═══════════════════════════════════════════════ */
+const AIRCRAFT = {
+  dr400: {
+    label: "DR400-120 ROTAX · F-GORP",
+    pdfName: "FGORP-Checklist.pdf",
+    rpmMax: 6000, rpmCruise: 4000, rpmTakeoff: 5200,
+    speeds: { vs: 0, vr: 110, vim: 120, vom: 140, app: 110, vne: 284 },
+    pressureMax: 4,
+    phases: [
+      {
+        id: "prise_en_compte", label: "Prise en compte", icon: "📋",
+        items: [
+          { a: "Carnet de route", v: "Essence / Huile / Potentiel" },
+          { a: "Horamètre", v: "Noté" },
+          { a: "Documents", v: "À bord" },
+          { a: "Frein de park", v: "Serré" },
+          { a: "Visite pré-vol Int & Ext", v: "Effectuée" },
+          { a: "Niveau d'Huile", v: "Vérifié & Trappe Fermée" },
+          { a: "Flammes & caches hélice", v: "Enlevés" },
+          { a: "Barre de manœuvre", v: "Enlevée" },
+          { a: "Ailes", v: "Dégagées" },
+          { a: "Verrière", v: "Tirée" },
+          { a: "Sièges", v: "Verrouillés" },
+          { a: "Volets", v: "Rentrés" },
+          { a: "Trim", v: "Débattement / Neutre" },
+          { a: "Essence", v: "Ouverte", inst: "fuel" },
+          { a: "Contact — Clés", v: "ON", inst: "battery" },
+          { a: "Batterie", v: "ON", inst: "battery" },
+          { a: "Voyants Alarmes", v: "Testés" },
+          { a: "Strobe / Anticollision", v: "ON", inst: "strobe" },
+          { a: "Pompe Ess normale", v: "ON", inst: "pump1" },
+          { a: "Pompe Ess secours", v: "OFF" },
+          { a: "Lane A et B", v: "ON", inst: "laneAB" },
+          { a: "Pression essence", v: "2,8 à 3,2 bars", inst: "pressure" },
+        ]
+      },
+      {
+        id: "mise_en_route", label: "Mise en route", icon: "🔑",
+        items: [
+          { a: "Abords Dégagés", v: "Pieds sur freins" },
+          { a: "Champ d'hélice", v: "Dégagé", critical: true },
+          { a: "Manette gaz", v: "½ cm vers l'avant" },
+          { a: "Démarreur", v: "10 sec max", inst: "rpm_low" },
+          { a: "Régime > 2 500 RPM", v: "Pendant 5 sec", inst: "rpm_2500" },
+          { a: "Alarmes rouges & Masses", v: "Éteintes" },
+        ]
+      },
+      {
+        id: "roulage", label: "Roulage", icon: "🚦",
+        items: [
+          { a: "Transpondeur", v: "GND", inst: "xpdr_gnd" },
+          { a: "Phare", v: "ON" },
+          { a: "Essais Freins", v: "Vérifiés" },
+        ]
+      },
+      {
+        id: "point_fixe", label: "Point fixe", icon: "⚙️",
+        items: [
+          { a: "Frein de park", v: "Serré" },
+          { a: "Paramètres moteur", v: "Dans le vert" },
+          { a: "Régime", v: "4 000 RPM", inst: "rpm_4000" },
+          { a: "Lane A — OFF", v: "POWER ↓", inst: "laneA_off", critical: true },
+          { a: "Lane A — ON", v: "ECO Max", inst: "laneA_on" },
+          { a: "Lane B — OFF", v: "POWER −250", inst: "laneB_off", critical: true },
+          { a: "Lane B — ON", v: "ECO RPM", inst: "laneB_on" },
+          { a: "Essai Plein Gaz", v: "Mini 5 200 RPM", inst: "rpm_5200" },
+          { a: "Essai ralenti", v: "1 400 / 1 900 RPM" },
+          { a: "Tension ECU", v: "Mini 12,7 V", inst: "voltage" },
+          { a: "Régime Attente", v: "3 000 RPM", inst: "rpm_3000" },
+        ]
+      },
+      {
+        id: "avant_decollage", label: "Avant décollage", icon: "🛫",
+        items: [
+          { a: "Alarmes", v: "Éteintes" },
+          { a: "Altimètres", v: "QNH", inst: "alt" },
+          { a: "Transpondeur", v: "ALT", inst: "xpdr_alt" },
+          { a: "LANE A+B", v: "ON", inst: "laneAB" },
+          { a: "Autonomie", v: "Annoncée" },
+          { a: "Pompes élec", v: "Les 2 ON", inst: "pump1" },
+          { a: "EMU — Paramètres moteur", v: "Vérifiés" },
+          { a: "Trim", v: "Décollage" },
+          { a: "Essence", v: "Ouverte", inst: "fuel" },
+          { a: "Volets", v: "Plein sortis puis décollage" },
+          { a: "Commandes de vol", v: "Libres / Bon sens", critical: true },
+          { a: "Ceintures", v: "Attachées", critical: true },
+          { a: "Verrière", v: "Verrouillée", critical: true },
+          { a: "TEM — Briefing départ", v: "Effectué" },
+          { a: "HSI", v: "QFU" },
+          { a: "5 200 RPM mini — Manche dans le vent", v: "Décollage", inst: "rpm_5200" },
+        ]
+      },
+      {
+        id: "atterrissage", label: "Atterrissage", icon: "🛬",
+        items: [
+          { a: "Transpondeur", v: "ALT", inst: "xpdr_alt" },
+          { a: "Pompes essence", v: "Les 2 ON", inst: "pump1" },
+          { a: "LANE A+B", v: "ON", inst: "laneAB" },
+          { a: "Alarmes", v: "Éteintes" },
+          { a: "Altimètre", v: "QNH", inst: "alt" },
+          { a: "Volets", v: "1 ou 2 crans" },
+          { a: "Verrière", v: "Déverrouillée finale" },
+          { a: "Ceintures", v: "Serrées", critical: true },
+          { a: "Vitesse approche", v: "110 km/h + Kve", inst: "spd_110" },
+        ]
+      },
+      {
+        id: "arret", label: "Arrêt moteur", icon: "🔴",
+        items: [
+          { a: "LANE A & B", v: "OFF", inst: "laneAB_off" },
+          { a: "Batterie", v: "OFF", inst: "battery_off" },
+          { a: "Alternateur", v: "OFF" },
+          { a: "Pompes essence élec", v: "Les 2 OFF", inst: "pump_off" },
+          { a: "Transpondeur", v: "STBY", inst: "xpdr_stby" },
+          { a: "Robinet Essence", v: "Fermé", inst: "fuel_off" },
+          { a: "Verrière", v: "Ouverte" },
+          { a: "Calles / Attaches", v: "Mises en place" },
+        ]
+      }
+    ]
+  },
+
+  ulm: {
+    label: "Super Guépard Voyage · F-JKJZ",
+    pdfName: "FJKJZ-Checklist.pdf",
+    rpmMax: 6200, rpmCruise: 4800, rpmTakeoff: 5500,
+    speeds: { vs: 0, vr: 105, vim: 105, vom: 125, app: 80, vne: 180, vfe: 110 },
+    phases: [
+      {
+        id: "prise_en_compte", label: "Prise en compte", icon: "📋",
+        items: [
+          { a: "Carnet de route", v: "Essence / Huile / Potentiel" },
+          { a: "Visite pré-vol Int & Ext", v: "Effectuée" },
+          { a: "Pitot", v: "Soufflé" },
+          { a: "Fenêtres Arrière", v: "Fermées" },
+          { a: "Sièges", v: "Réglés" },
+          { a: "Palonniers", v: "Réglés" },
+          { a: "Goupilles Manche", v: "En place" },
+          { a: "Casques", v: "Branchés" },
+          { a: "Clé Batterie", v: "En place", inst: "battery" },
+          { a: "Portes", v: "Fermées & Verrouillées" },
+          { a: "Ceintures & harnais", v: "Réglés — Bouclés", critical: true },
+          { a: "Frein de park", v: "Serré" },
+          { a: "Bouchon réservoir", v: "En place" },
+        ]
+      },
+      {
+        id: "avant_mise_en_route", label: "Avant mise en route", icon: "🔌",
+        items: [
+          { a: "Barre de manœuvre", v: "Enlevée" },
+          { a: "Batterie", v: "ON", inst: "battery" },
+          { a: "Témoin Batterie", v: "Allumé" },
+          { a: "Robinet Essence", v: "Ouvert", inst: "fuel" },
+          { a: "2 Goupilles parachute", v: "Enlevées", critical: true },
+          { a: "Master Switch", v: "ON" },
+          { a: "Instruments", v: "Allumés" },
+          { a: "Horamètre", v: "Noté" },
+          { a: "Strobe", v: "ON", inst: "strobe" },
+          { a: "Lane A & B", v: "ON", inst: "laneAB" },
+          { a: "Gaz", v: "Réduits" },
+        ]
+      },
+      {
+        id: "mise_en_route", label: "Mise en route", icon: "🔑",
+        items: [
+          { a: "Sécurité — Personnes aux abords", v: "Dégagées", critical: true },
+          { a: "Champ d'hélice", v: "Dégagé", critical: true },
+          { a: "Démarrage moteur", v: "—", inst: "rpm_low" },
+          { a: "Alarmes", v: "Vérifiées" },
+        ]
+      },
+      {
+        id: "roulage", label: "Roulage", icon: "🚦",
+        items: [
+          { a: "Appel radio", v: "Abords dégagés" },
+          { a: "Essais Freins", v: "OK" },
+          { a: "Bille", v: "Vérifiée" },
+        ]
+      },
+      {
+        id: "point_fixe", label: "Point fixe", icon: "⚙️",
+        items: [
+          { a: "Frein de park", v: "Serré" },
+          { a: "Température Huile", v: "Mini 50°C", inst: "oil_temp" },
+          { a: "Température CHT", v: "Mini 70°C" },
+          { a: "Régime Moteur", v: "4 000 RPM", inst: "rpm_4000" },
+          { a: "Lane A — OFF", v: "Chute max 300 RPM", inst: "laneA_off", critical: true },
+          { a: "Lane A — ON", v: "Retour normal", inst: "laneA_on" },
+          { a: "Lane B — OFF", v: "Diff. max 115 RPM", inst: "laneB_off", critical: true },
+          { a: "Lane B — ON", v: "Retour normal", inst: "laneB_on" },
+          { a: "Essai ralenti", v: "1 600 / 1 800 RPM" },
+          { a: "Régime moteur", v: "2 000 RPM", inst: "rpm_2000" },
+        ]
+      },
+      {
+        id: "avant_decollage", label: "Avant décollage", icon: "🛫",
+        items: [
+          { a: "Frein de park", v: "Serré" },
+          { a: "Autonomie", v: "Annoncée" },
+          { a: "Trim", v: "Position décollage" },
+          { a: "Commandes de vol", v: "Libres / Bon sens", critical: true },
+          { a: "Volets", v: "Plein sortis puis décollage" },
+          { a: "Transpondeur", v: "ALT", inst: "xpdr_alt" },
+          { a: "Accessoires et bagages", v: "Attachés" },
+          { a: "Goupille parachute", v: "Enlevée", critical: true },
+          { a: "TEM — Briefing départ", v: "Effectué" },
+        ]
+      },
+      {
+        id: "atterrissage", label: "Atterrissage", icon: "🛬",
+        items: [
+          { a: "Volets", v: "Plein sortis" },
+          { a: "Vitesse approche", v: "80 km/h — face au vent", inst: "spd_80" },
+          { a: "Ceintures / Harnais", v: "Attachés", critical: true },
+          { a: "Finale", v: "80 km/h — 1 cran" },
+        ]
+      },
+      {
+        id: "arret", label: "Arrêt moteur", icon: "🔴",
+        items: [
+          { a: "Lane A & B", v: "OFF", inst: "laneAB_off" },
+          { a: "Clé Batterie", v: "OFF", inst: "battery_off" },
+          { a: "Goupille Parachute", v: "En place" },
+          { a: "Robinet Essence", v: "Fermé", inst: "fuel_off" },
+        ]
+      }
+    ]
+  }
+};
+
+/* ═══════════════════════════════════
+   ÉTAT GLOBAL
+   ═══════════════════════════════════ */
+let currentAC = 'dr400';
+let activePhase = 0;
+let checked = {};   // { "phaseId-itemIdx": bool }
+let instState = {}; // instrument states
+
+function initState() {
+  checked = {};
+  instState = {
+    rpm: 0, speed: 0, alt: 0,
+    battery: false, fuel: false, strobe: false,
+    pump1: false, pump2: false,
+    laneA: true, laneB: true,
+    pressure: 0, voltage: 12.4,
+    xpdr: 'OFF', oilTemp: 20
+  };
+}
+
+/* ═══════════════════════════════════
+   INSTRUMENTS — CANVAS
+   ═══════════════════════════════════ */
+function drawGauge(canvasId, opts) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const S = c.width;
+  const cx = S/2, cy = S/2, r = S/2 - 4;
+  ctx.clearRect(0, 0, S, S);
+
+  // Fond
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = '#050d18';
+  ctx.fill();
+  ctx.strokeStyle = opts.borderColor || '#1e3a5f';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Arc de fond (gris)
+  const startAngle = opts.startAngle ?? (Math.PI * 0.75);
+  const endAngle   = opts.endAngle   ?? (Math.PI * 2.25);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 8, startAngle, endAngle);
+  ctx.strokeStyle = '#1a2f50';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // Arc coloré selon valeur
+  const pct = Math.max(0, Math.min(1, (opts.value - opts.min) / (opts.max - opts.min)));
+  const valAngle = startAngle + pct * (endAngle - startAngle);
+  if (pct > 0) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 8, startAngle, valAngle);
+    ctx.strokeStyle = opts.color || '#f59e0b';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+  }
+
+  // Zone rouge (si définie)
+  if (opts.redFrom != null) {
+    const rPct = (opts.redFrom - opts.min) / (opts.max - opts.min);
+    const rAngle = startAngle + rPct * (endAngle - startAngle);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 8, rAngle, endAngle);
+    ctx.strokeStyle = '#7f1d1d';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+  }
+
+  // Aiguille
+  const needleAngle = startAngle + pct * (endAngle - startAngle);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(needleAngle);
+  ctx.beginPath();
+  ctx.moveTo(0, 4);
+  ctx.lineTo(r - 14, 0);
+  ctx.lineTo(0, -4);
+  ctx.closePath();
+  ctx.fillStyle = opts.needleColor || '#f59e0b';
+  ctx.fill();
+  ctx.restore();
+
+  // Centre
+  ctx.beginPath();
+  ctx.arc(cx, cy, 5, 0, Math.PI*2);
+  ctx.fillStyle = opts.needleColor || '#f59e0b';
+  ctx.fill();
+
+  // Valeur texte
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = `bold ${Math.round(S*0.15)}px 'Consolas', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(opts.displayValue ?? Math.round(opts.value), cx, cy + r*0.35);
+
+  // Unité
+  ctx.fillStyle = '#64748b';
+  ctx.font = `${Math.round(S*0.09)}px 'Segoe UI', sans-serif`;
+  ctx.fillText(opts.unit || '', cx, cy + r*0.55);
+}
+
+function renderInstruments() {
+  const ac = AIRCRAFT[currentAC];
+  const cluster = document.getElementById('instrument-cluster');
+  const indGrid = document.getElementById('indicators-grid');
+
+  // ── Cluster : tachymètre + badin + altimètre (communs) ──
+  cluster.innerHTML = `
+    <div class="instrument">
+      <canvas id="c-rpm" width="110" height="110"></canvas>
+      <div class="inst-label">Tachy · RPM</div>
+    </div>
+    <div class="instrument">
+      <canvas id="c-spd" width="100" height="100"></canvas>
+      <div class="inst-label">Badin · km/h</div>
+    </div>
+    <div class="instrument">
+      <canvas id="c-alt" width="90" height="90"></canvas>
+      <div class="inst-label">Altimètre · ft</div>
+    </div>
+    ${currentAC === 'dr400' ? `
+    <div class="instrument">
+      <canvas id="c-prs" width="85" height="85"></canvas>
+      <div class="inst-label">Pression ess · bar</div>
+    </div>
+    <div class="instrument">
+      <canvas id="c-vlt" width="85" height="85"></canvas>
+      <div class="inst-label">Voltage ECU · V</div>
+    </div>` : `
+    <div class="instrument">
+      <canvas id="c-oilT" width="85" height="85"></canvas>
+      <div class="inst-label">Temp. huile · °C</div>
+    </div>`}
+  `;
+
+  // ── Indicateurs booléens ──
+  if (currentAC === 'dr400') {
+    indGrid.innerHTML = `
+      <div class="indicator ${instState.battery ? 'on' : 'off'}" id="ind-bat"><span class="indicator-dot"></span>Batterie</div>
+      <div class="indicator ${instState.fuel    ? 'on' : 'off'}" id="ind-fuel"><span class="indicator-dot"></span>Essence</div>
+      <div class="indicator ${instState.laneA   ? 'on' : 'off'}" id="ind-laneA"><span class="indicator-dot"></span>Lane A</div>
+      <div class="indicator ${instState.laneB   ? 'on' : 'off'}" id="ind-laneB"><span class="indicator-dot"></span>Lane B</div>
+      <div class="indicator ${instState.pump1   ? 'on' : 'off'}" id="ind-pump1"><span class="indicator-dot"></span>Pompe 1</div>
+      <div class="indicator ${instState.strobe  ? 'warn':'off'}" id="ind-strobe"><span class="indicator-dot"></span>Strobe</div>
+      <div class="indicator ${instState.xpdr==='ALT'?'on':instState.xpdr==='GND'?'warn':'off'}" id="ind-xpdr">
+        <span class="indicator-dot"></span>XPDR · ${instState.xpdr}
+      </div>
+      <div class="indicator" style="font-size:.65rem;color:var(--muted)">
+        Vr ${ac.speeds.vr} · Vim ${ac.speeds.vim}<br>Vom ${ac.speeds.vom} · App ${ac.speeds.app}
+      </div>
+    `;
+  } else {
+    indGrid.innerHTML = `
+      <div class="indicator ${instState.battery ? 'on' : 'off'}" id="ind-bat"><span class="indicator-dot"></span>Batterie</div>
+      <div class="indicator ${instState.fuel    ? 'on' : 'off'}" id="ind-fuel"><span class="indicator-dot"></span>Essence</div>
+      <div class="indicator ${instState.laneA   ? 'on' : 'off'}" id="ind-laneA"><span class="indicator-dot"></span>Lane A</div>
+      <div class="indicator ${instState.laneB   ? 'on' : 'off'}" id="ind-laneB"><span class="indicator-dot"></span>Lane B</div>
+      <div class="indicator ${instState.strobe  ? 'warn':'off'}" id="ind-strobe"><span class="indicator-dot"></span>Strobe</div>
+      <div class="indicator ${instState.xpdr==='ALT'?'on':'off'}" id="ind-xpdr">
+        <span class="indicator-dot"></span>XPDR · ${instState.xpdr}
+      </div>
+      <div class="indicator" style="font-size:.65rem;color:var(--muted)">
+        Vapp ${ac.speeds.app} · VFE ${ac.speeds.vfe??'—'}<br>Vi max ${ac.speeds.vim} km/h
+      </div>
+      <div class="indicator warn" style="font-size:.65rem">
+        <span class="indicator-dot"></span>Parachute — vérifier
+      </div>
+    `;
+  }
+
+  redrawGauges();
+}
+
+function redrawGauges() {
+  const ac = AIRCRAFT[currentAC];
+  drawGauge('c-rpm', {
+    value: instState.rpm, min: 0, max: ac.rpmMax,
+    unit: 'RPM', color: instState.rpm > ac.rpmTakeoff * .95 ? '#22c55e' : '#f59e0b',
+    redFrom: ac.rpmMax * 0.95,
+    displayValue: instState.rpm >= 1000 ? (instState.rpm/1000).toFixed(1)+'k' : instState.rpm
+  });
+  drawGauge('c-spd', {
+    value: instState.speed, min: 0, max: ac.speeds.vne || 200,
+    unit: 'km/h', color: '#3b82f6',
+    redFrom: (ac.speeds.vne || 200) * 0.9,
+    displayValue: Math.round(instState.speed)
+  });
+  drawGauge('c-alt', {
+    value: instState.alt, min: 0, max: 10000,
+    unit: 'ft', color: '#a78bfa',
+    displayValue: instState.alt >= 1000 ? (instState.alt/1000).toFixed(1)+'k' : instState.alt
+  });
+  if (currentAC === 'dr400') {
+    drawGauge('c-prs', {
+      value: instState.pressure, min: 0, max: ac.pressureMax,
+      unit: 'bar', color: '#22c55e', redFrom: 3.5,
+      displayValue: instState.pressure.toFixed(1)
+    });
+    drawGauge('c-vlt', {
+      value: instState.voltage, min: 10, max: 15,
+      unit: 'V', color: '#f59e0b', redFrom: 14.5,
+      displayValue: instState.voltage.toFixed(1)
+    });
+  } else {
+    drawGauge('c-oilT', {
+      value: instState.oilTemp, min: 0, max: 130,
+      unit: '°C', color: '#f97316', redFrom: 110,
+      displayValue: Math.round(instState.oilTemp)
+    });
+  }
+}
+
+/* ═══════════════════════════════════
+   LOGIQUE INSTRUMENTS selon items
+   ═══════════════════════════════════ */
+function applyInstrumentEffect(inst, checked) {
+  const v = checked;
+  if (!inst) return;
+  switch(inst) {
+    case 'battery':    instState.battery = v; break;
+    case 'battery_off':instState.battery = !v; break;
+    case 'fuel':       instState.fuel = v; instState.pressure = v ? 3.0 : 0; break;
+    case 'fuel_off':   instState.fuel = !v; instState.pressure = 0; break;
+    case 'strobe':     instState.strobe = v; break;
+    case 'pump1':      instState.pump1 = v; break;
+    case 'pump_off':   instState.pump1 = false; break;
+    case 'laneAB':     instState.laneA = v; instState.laneB = v; break;
+    case 'laneAB_off': instState.laneA = false; instState.laneB = false; break;
+    case 'laneA_off':  instState.laneA = false; break;
+    case 'laneA_on':   instState.laneA = true; break;
+    case 'laneB_off':  instState.laneB = false; break;
+    case 'laneB_on':   instState.laneB = true; break;
+    case 'pressure':   instState.pressure = v ? 3.0 : 0; break;
+    case 'voltage':    instState.voltage = v ? 13.2 : 12.1; break;
+    case 'rpm_low':    instState.rpm = v ? 1400 : 0; break;
+    case 'rpm_2000':   instState.rpm = v ? 2000 : instState.rpm; break;
+    case 'rpm_2500':   instState.rpm = v ? 2500 : instState.rpm; break;
+    case 'rpm_3000':   instState.rpm = v ? 3000 : instState.rpm; break;
+    case 'rpm_4000':   instState.rpm = v ? 4000 : instState.rpm; break;
+    case 'rpm_5200':   instState.rpm = v ? 5200 : instState.rpm; break;
+    case 'xpdr_gnd':   instState.xpdr = v ? 'GND' : 'OFF'; break;
+    case 'xpdr_alt':   instState.xpdr = v ? 'ALT' : 'GND'; break;
+    case 'xpdr_stby':  instState.xpdr = v ? 'STBY' : 'ALT'; break;
+    case 'alt':        instState.alt = v ? 600 : 0; break;
+    case 'oil_temp':   instState.oilTemp = v ? 55 : 20; break;
+    case 'spd_80':     instState.speed = v ? 80 : 0; break;
+    case 'spd_110':    instState.speed = v ? 110 : 0; break;
+  }
+  renderInstruments();
+}
+
+/* ═══════════════════════════════════
+   RENDU CHECKLIST
+   ═══════════════════════════════════ */
+function renderPhase(pi) {
+  const phase = AIRCRAFT[currentAC].phases[pi];
+  return `
+    <div class="phase-header">${phase.icon} ${phase.label}</div>
+    ${phase.items.map((item, ii) => {
+      const key = `${phase.id}-${ii}`;
+      const isChecked = !!checked[key];
+      return `<label class="checklist-item ${isChecked?'checked':''} ${item.critical?'item-critical':''}" id="ci-${key}">
+        <input type="checkbox" ${isChecked?'checked':''} onchange="toggleItem('${phase.id}',${ii},this.checked,'${item.inst||''}')">
+        <span class="item-action">${item.a}</span>
+        <span class="item-value">${item.v}</span>
+      </label>`;
+    }).join('')}
+    <div class="done-banner ${phase.items.every((_,ii)=>checked[`${phase.id}-${ii}`]) ? 'show':''}" id="done-${phase.id}">
+      ✅ Phase <strong>${phase.label}</strong> terminée !
+    </div>
+  `;
+}
+
+function buildUI() {
+  const ac = AIRCRAFT[currentAC];
+  // PDF links
+  document.getElementById('pdf-links').innerHTML = `
+    <a class="pdf-btn" href="#" onclick="return false">📄 ${ac.pdfName} — déposer dans notes/ pour accéder</a>
+  `;
+  // Phase tabs
+  const tabs = document.getElementById('phase-tabs');
+  tabs.innerHTML = ac.phases.map((p,i) => `
+    <button class="phase-tab ${i===activePhase?'active':''} ${
+      p.items.every((_,ii)=>checked[`${p.id}-${ii}`]) ? 'done':''
+    }" onclick="switchPhase(${i})">${p.icon} ${p.label}</button>
+  `).join('');
+  // Content
+  document.getElementById('checklist-content').innerHTML = renderPhase(activePhase);
+  updateProgress();
+  renderInstruments();
+}
+
+function switchPhase(pi) {
+  activePhase = pi;
+  buildUI();
+}
+
+function toggleItem(phaseId, ii, val, inst) {
+  checked[`${phaseId}-${ii}`] = val;
+  const el = document.getElementById(`ci-${phaseId}-${ii}`);
+  if (el) el.classList.toggle('checked', val);
+  applyInstrumentEffect(inst, val);
+  const phase = AIRCRAFT[currentAC].phases.find(p => p.id === phaseId);
+  if (phase) {
+    const allDone = phase.items.every((_,i) => checked[`${phaseId}-${i}`]);
+    const banner = document.getElementById(`done-${phaseId}`);
+    if (banner) banner.classList.toggle('show', allDone);
+  }
+  updateProgress();
+  // Mettre à jour les onglets
+  document.querySelectorAll('.phase-tab').forEach((t,i) => {
+    const p = AIRCRAFT[currentAC].phases[i];
+    t.classList.toggle('done', p.items.every((_,ii)=>checked[`${p.id}-${ii}`]));
+  });
+}
+
+function updateProgress() {
+  let total = 0, done = 0;
+  AIRCRAFT[currentAC].phases.forEach(p => {
+    p.items.forEach((_, ii) => { total++; if (checked[`${p.id}-${ii}`]) done++; });
+  });
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done} / ${total} items cochés`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+function selectAircraft(ac) {
+  currentAC = ac;
+  activePhase = 0;
+  initState();
+  document.getElementById('btn-dr400').classList.toggle('active', ac==='dr400');
+  document.getElementById('btn-ulm').classList.toggle('active', ac==='ulm');
+  buildUI();
+}
+
+function resetAll() {
+  if (!confirm('Réinitialiser toute la checklist ?')) return;
+  initState();
+  buildUI();
+}
+
+// Init
+initState();
+buildUI();
+</script>
+</body>
+</html>
