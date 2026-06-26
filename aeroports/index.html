@@ -344,8 +344,18 @@ function showDetail(a){
   const vacBtn=document.getElementById('dp-vac');
   const siaBtn=document.getElementById('dp-sia');
   if(a.pays==='FR'){
-    // Lien vers l'AIP France sur le portail SIA pour cet aérodrome
-    vacBtn.href=`https://www.sia.aviation-civile.gouv.fr/dvd/eAIP_01_NOV_2024/FRANCE/AIRAC-2024-10-31/html/eAIP/FR-AD-2.${a.icao}-fr-FR.html`;
+    // Calcul dynamique de la date AIRAC courante (cycle de 28 jours depuis le 25/01/2024)
+    const refAIRAC=new Date(Date.UTC(2024,0,25));
+    const now=new Date();
+    const cycleN=Math.floor((now-refAIRAC)/(28*86400000));
+    const cycleStart=new Date(refAIRAC.getTime()+cycleN*28*86400000);
+    const MOIS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const dd=String(cycleStart.getUTCDate()).padStart(2,'0');
+    const mon=MOIS[cycleStart.getUTCMonth()];
+    const yyyy=cycleStart.getUTCFullYear();
+    const mm=String(cycleStart.getUTCMonth()+1).padStart(2,'0');
+    const siaUrl=`https://www.sia.aviation-civile.gouv.fr/dvd/eAIP_${dd}_${mon}_${yyyy}/FRANCE/AIRAC-${yyyy}-${mm}-${dd}/html/eAIP/FR-AD-2.${a.icao}-fr-FR.html`;
+    vacBtn.href=siaUrl;
     vacBtn.textContent='📄 Carte VAC — SIA AIP France';
     vacBtn.style.display='flex';
     siaBtn.href='https://www.sia.aviation-civile.gouv.fr/';
