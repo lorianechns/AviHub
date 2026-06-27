@@ -13,35 +13,38 @@
     .nav-links a{color:#64748b;}
     .nav-links a:hover,.nav-links a.active{color:#0f172a;background:#f1f5f9;}
 
-    .week-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem;}
-    .week-tab{background:#fff;border:1px solid #e2e8f0;color:#64748b;padding:.32rem .85rem;border-radius:999px;font-size:.78rem;cursor:pointer;transition:all .12s;font-weight:500;}
-    .week-tab.active{background:#0f172a;color:#fff;border-color:#0f172a;font-weight:600;}
-
-    .week-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.75rem;}
-    .day-col{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:.85rem .9rem;min-height:70px;transition:border-color .12s,background .12s;}
-    .day-col.drag-over{border-color:#f59e0b;background:#fffbeb;}
-    .day-col.today-col{border-color:#f59e0b;box-shadow:0 0 0 3px #fef3c7;}
-    .day-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between;}
-    .day-col.today-col .day-label{color:#b45309;}
-    .day-sub{font-size:.68rem;font-weight:400;color:#cbd5e1;}
-
-    .task-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid;border-radius:7px;padding:.55rem .7rem;margin-bottom:.38rem;cursor:grab;transition:box-shadow .12s;position:relative;user-select:none;}
-    .task-card:active{cursor:grabbing;}
-    .task-card.dragging{opacity:.35;}
-    .task-card.done{opacity:.5;}
-    .task-card.done::after{content:'✅';position:absolute;right:.55rem;top:.45rem;font-size:.7rem;}
-    .task-title{font-size:.8rem;font-weight:500;color:#0f172a;line-height:1.35;padding-right:1.1rem;margin-bottom:.3rem;}
-    .task-meta{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;}
+    /* Stats */
+    .stats-row{display:flex;gap:.85rem;margin-bottom:1.1rem;flex-wrap:wrap;}
+    .stat-card{background:#f1f5f9;border-radius:12px;padding:.8rem 1.35rem;flex:1;min-width:120px;}
+    .stat-label{font-size:.66rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.28rem;}
+    .stat-val{font-size:1.5rem;font-weight:700;color:#0f172a;line-height:1.1;}
+    /* Legend */
+    .legend-row{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1.75rem;}
+    .legend-pill{font-size:.73rem;font-weight:600;padding:.26rem .75rem;border-radius:999px;}
+    /* Programme scrollable */
+    .sem-section{margin-bottom:2.25rem;}
+    .sem-title{font-size:.98rem;font-weight:700;color:#0f172a;border-bottom:1.5px solid #e2e8f0;padding-bottom:.45rem;margin-bottom:.9rem;}
+    .jour-grp{margin-bottom:.75rem;}
+    .jour-lbl{font-size:.7rem;font-weight:600;color:#94a3b8;margin-bottom:.38rem;display:flex;align-items:center;gap:.4rem;}
+    .jour-lbl.today-lbl{color:#b45309;}
+    .jour-lbl .today-dot{background:#f59e0b;border-radius:50%;width:6px;height:6px;display:inline-block;}
+    /* Session cards */
+    .sess-card{display:flex;align-items:center;justify-content:space-between;border-radius:10px;padding:.6rem .9rem;margin-bottom:.38rem;cursor:pointer;transition:filter .12s;gap:.75rem;}
+    .sess-card:hover{filter:brightness(.95);}
+    .sess-card.is-done{opacity:.42;}
+    .sess-done-mark{font-size:.75rem;flex-shrink:0;}
+    .sess-title{font-size:.84rem;font-weight:500;flex:1;line-height:1.35;}
+    .sess-title a{text-decoration:none;color:inherit;border-bottom:1px dashed rgba(0,0,0,.2);}
+    .sess-title a:hover{border-bottom-color:transparent;}
+    .sess-dur{font-size:.7rem;font-weight:600;background:rgba(255,255,255,.55);padding:.15rem .5rem;border-radius:6px;white-space:nowrap;flex-shrink:0;}
+    /* Pastel category backgrounds */
+    .sc-perso{background:#EEEDFE;color:#26215C;}
+    .sc-metier{background:#E1F5EE;color:#04342C;}
+    .sc-candidature{background:#FAECE7;color:#4A1B0C;}
+    .sc-entretien{background:#FBEAF0;color:#4B1528;}
+    .sc-video{background:#FAEEDA;color:#412402;}
+    /* Move modal day btn */
     .cat-badge{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.14rem .45rem;border-radius:999px;display:inline-block;}
-    .task-dur{font-size:.68rem;color:#94a3b8;}
-    .task-actions{margin-top:.42rem;display:flex;gap:.3rem;flex-wrap:wrap;}
-    .tbtn{font-size:.7rem;padding:.2rem .5rem;border-radius:5px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;}
-    .tbtn-train{background:#f59e0b;border-color:#f59e0b;color:#000;}
-    .tbtn-train:hover{background:#d97706;}
-    .tbtn-move{background:#fff;border-color:#e2e8f0;color:#64748b;}
-    .tbtn-move:hover{border-color:#94a3b8;color:#0f172a;}
-    .tbtn-del{background:#fff;border-color:#fecaca;color:#ef4444;}
-    .tbtn-del:hover{background:#fef2f2;}
 
     .today-banner{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:1.35rem 1.75rem;color:#fff;margin-bottom:1.75rem;}
     .today-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:.4rem;}
@@ -128,13 +131,27 @@
 <div class="container">
   <div id="today-section"></div>
 
-  <div class="progress-row">
-    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
-    <div class="progress-label" id="prog-label">0 / 0 tâches</div>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Temps total programme</div><div class="stat-val">~50h</div></div>
+    <div class="stat-card"><div class="stat-label">Durée</div><div class="stat-val">5 semaines</div></div>
+    <div class="stat-card"><div class="stat-label">Progression</div><div class="stat-val" id="prog-label">0 / 0</div></div>
   </div>
-
-  <div class="week-tabs" id="week-tabs"></div>
-  <div id="week-content"></div>
+  <!-- Barre de progression -->
+  <div class="progress-row" style="margin-bottom:1.35rem;">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div style="font-size:.72rem;color:#94a3b8;font-weight:600;white-space:nowrap;" id="prog-pct">0%</div>
+  </div>
+  <!-- Légende catégories -->
+  <div class="legend-row">
+    <span class="legend-pill" style="background:#EEEDFE;color:#26215C">Développement perso</span>
+    <span class="legend-pill" style="background:#E1F5EE;color:#04342C">Métier / écosystème</span>
+    <span class="legend-pill" style="background:#FAECE7;color:#4A1B0C">Candidature / écrit</span>
+    <span class="legend-pill" style="background:#FBEAF0;color:#4B1528">Préparation entretien</span>
+    <span class="legend-pill" style="background:#FAEEDA;color:#412402">Vidéos</span>
+  </div>
+  <!-- Programme complet scrollable -->
+  <div id="prog-view"></div>
 
   <hr class="sep">
   <div class="sec-hd">📁 Mes fiches complétées (<span id="fiche-count">0</span>)</div>
@@ -395,7 +412,7 @@ function getQuestions(task){
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function renderAll(){renderToday();renderProgress();renderTabs();renderWeek(currentWeek);renderFiches();}
+function renderAll(){renderToday();renderProgress();renderProgramme();renderFiches();}
 
 function renderToday(){
   const sec=document.getElementById('today-section');
@@ -429,107 +446,35 @@ function renderProgress(){
   const n=tasks.filter(t=>done.has(t.id)).length;
   const pct=tasks.length?Math.round(n/tasks.length*100):0;
   document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-label').textContent=`${n} / ${tasks.length} tâches (${pct}%)`;
+  document.getElementById('prog-label').textContent=`${n} / ${tasks.length}`;
+  document.getElementById('prog-pct').textContent=pct+'%';
 }
 
-function renderTabs(){
-  const el=document.getElementById('week-tabs');
-  const semTabs=prog.semaines.map((s,i)=>`<button class="week-tab${i===currentWeek?' active':''}" onclick="currentWeek=${i};setView('week');document.querySelectorAll('.week-tab').forEach((b,j)=>b.classList.toggle('active',j===${i}))">${s.label}</button>`).join('');
-  el.innerHTML=semTabs+`<button class="week-tab${currentWeek===-1?' active':''}" onclick="currentWeek=-1;setView('global');document.querySelectorAll('.week-tab').forEach((b,j)=>b.classList.toggle('active',j===prog.semaines.length))" style="background:${currentWeek===-1?'#0f172a':'#fff'};color:${currentWeek===-1?'#fff':'#64748b'}">🗓 Vue globale</button>`;
-}
-
-let viewMode='week';
-function setView(mode){
-  viewMode=mode;
-  renderTabs();
-  if(mode==='global') renderGlobal();
-  else renderWeek(currentWeek);
-}
-
-function renderGlobal(){
-  const el=document.getElementById('week-content');
+function renderProgramme(){
   const todayDayId=getTodayDayId();
-  el.innerHTML=`
-    <div style="overflow-x:auto;">
-    <div style="display:grid;grid-template-columns:repeat(${prog.semaines.length},minmax(220px,1fr));gap:.75rem;min-width:${prog.semaines.length*230}px;">
-    ${prog.semaines.map((s,wi)=>{
-      const semTasks=s.jours.flatMap(d=>d.tasks);
-      const semDone=semTasks.filter(t=>done.has(t.id)).length;
-      const pct=semTasks.length?Math.round(semDone/semTasks.length*100):0;
-      return `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:.85rem .9rem;">
-        <div style="font-size:.75rem;font-weight:700;color:#0f172a;margin-bottom:.3rem;display:flex;justify-content:space-between;align-items:center;">
-          <span>${s.label}</span>
-          <button style="font-size:.65rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:5px;padding:.1rem .4rem;cursor:pointer;color:#64748b;" onclick="currentWeek=${wi};setView('week')">Ouvrir →</button>
-        </div>
-        <div style="background:#e2e8f0;border-radius:999px;height:4px;margin-bottom:.75rem;">
-          <div style="background:#f59e0b;border-radius:999px;height:4px;width:${pct}%"></div>
-        </div>
-        ${s.jours.map(d=>{
-          const isToday=d.id===todayDayId;
-          const dayDone=d.tasks.filter(t=>done.has(t.id)).length;
-          return `<div style="margin-bottom:.55rem;">
-            <div style="font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${isToday?'#b45309':'#94a3b8'};margin-bottom:.25rem;display:flex;justify-content:space-between;">
-              <span>${d.label}${isToday?' 📍':''}</span>
-              <span style="font-weight:400;color:#cbd5e1">${d.sub}</span>
-            </div>
-            <div id="gday-${d.id}"
-              ondragover="event.preventDefault();document.getElementById('gday-${d.id}').style.outline='2px solid #f59e0b'"
-              ondragleave="document.getElementById('gday-${d.id}').style.outline=''"
-              ondrop="document.getElementById('gday-${d.id}').style.outline='';dropOnDay(event,'${d.id}')">
-              ${d.tasks.map(t=>{
-                const c=CATS[t.cat]||{color:'#94a3b8'};
-                return `<div draggable="true"
-                  ondragstart="dragStart(event,'${t.id}')" ondragend="dragEnd(event)"
-                  onclick="openTraining('${t.id}')"
-                  style="background:${done.has(t.id)?'#f8fafc':'#fff'};border:1px solid #e2e8f0;border-left:3px solid ${c.color};border-radius:6px;padding:.3rem .55rem;margin-bottom:.22rem;cursor:pointer;font-size:.72rem;color:${done.has(t.id)?'#94a3b8':'#0f172a'};${done.has(t.id)?'text-decoration:line-through;':''}" title="${t.titre}">
-                  ${done.has(t.id)?'✅ ':''}${t.titre.length>42?t.titre.slice(0,42)+'…':t.titre}
-                </div>`;
-              }).join('')}
-              ${d.tasks.length===0?`<div style="font-size:.7rem;color:#cbd5e1;padding:.2rem 0;font-style:italic">Vide</div>`:''}
-            </div>
-          </div>`;
-        }).join('')}
-        <div style="font-size:.7rem;color:#94a3b8;margin-top:.35rem;border-top:1px solid #f1f5f9;padding-top:.35rem;">${semDone}/${semTasks.length} tâches • ${pct}%</div>
-      </div>`;
-    }).join('')}
-    </div></div>`;
+  const el=document.getElementById('prog-view');
+  el.innerHTML=prog.semaines.map(s=>`
+    <div class="sem-section">
+      <div class="sem-title">${s.label}</div>
+      ${s.jours.map(d=>{
+        const isToday=d.id===todayDayId;
+        return `<div class="jour-grp">
+          <div class="jour-lbl${isToday?' today-lbl':''}">${isToday?'<span class="today-dot"></span>':''}${d.label} · ${d.sub}</div>
+          ${d.tasks.map(t=>renderSessionCard(t)).join('')}
+        </div>`;
+      }).join('')}
+    </div>`).join('');
 }
 
-function renderWeek(wi){
-  const sem=prog.semaines[wi];
-  const todayDayId=getTodayDayId();
-  const el=document.getElementById('week-content');
-  el.innerHTML=`<div class="week-grid">${sem.jours.map(d=>{
-    const isToday=d.id===todayDayId;
-    const tasksDone=d.tasks.filter(t=>done.has(t.id)).length;
-    return `<div class="day-col${isToday?' today-col':''}" id="day-${d.id}"
-      ondragover="event.preventDefault();document.getElementById('day-${d.id}').classList.add('drag-over')"
-      ondragleave="document.getElementById('day-${d.id}').classList.remove('drag-over')"
-      ondrop="dropOnDay(event,'${d.id}')">
-      <div class="day-label">${d.label}${isToday?' 📍':''} <span class="day-sub">${d.sub}</span></div>
-      <div id="tasks-${d.id}">${d.tasks.map(t=>renderTask(t)).join('')}</div>
-      <div class="add-row">
-        <input class="add-inp" id="add-${d.id}" placeholder="+ Ajouter une tâche…" onkeydown="if(event.key==='Enter')addTask('${d.id}')">
-        <button class="add-btn" onclick="addTask('${d.id}')">+</button>
-      </div>
-      ${tasksDone>0?`<div style="font-size:.67rem;color:#94a3b8;margin-top:.4rem;">${tasksDone}/${d.tasks.length} fait${tasksDone>1?'es':''}</div>`:''}
-    </div>`;
-  }).join('')}</div>`;
-}
-
-function renderTask(t){
-  const c=CATS[t.cat]||{color:'#94a3b8'};
-  return `<div class="task-card${done.has(t.id)?' done':''}" id="task-${t.id}" draggable="true"
-    style="border-left-color:${c.color}"
-    ondragstart="dragStart(event,'${t.id}')"
-    ondragend="dragEnd(event)">
-    <div class="task-title">${t.titre}</div>
-    <div class="task-meta">${catBadge(t.cat)}<span class="task-dur">${t.duree}</span></div>
-    <div class="task-actions">
-      <button class="tbtn tbtn-train" onclick="openTraining('${t.id}')">▶ Entraîner</button>
-      <button class="tbtn tbtn-move" onclick="openMove('${t.id}')">⇄ Déplacer</button>
-      <button class="tbtn tbtn-del" onclick="deleteTask('${t.id}')">✕</button>
-    </div>
+function renderSessionCard(t){
+  const isDone=done.has(t.id);
+  const titleContent=t.lien
+    ?`<a href="${t.lien}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${t.titre}</a>`
+    :t.titre;
+  return `<div class="sess-card sc-${t.cat}${isDone?' is-done':''}" onclick="openTraining('${t.id}')">
+    ${isDone?'<span class="sess-done-mark">✅</span>':''}
+    <span class="sess-title">${titleContent}</span>
+    <span class="sess-dur">${t.duree}</span>
   </div>`;
 }
 
