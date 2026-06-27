@@ -31,8 +31,10 @@
     /* Session cards */
     .sess-card{display:flex;align-items:center;justify-content:space-between;border-radius:10px;padding:.6rem .9rem;margin-bottom:.38rem;cursor:pointer;transition:filter .12s;gap:.75rem;}
     .sess-card:hover{filter:brightness(.95);}
-    .sess-card.is-done{opacity:.42;}
-    .sess-done-mark{font-size:.75rem;flex-shrink:0;}
+    .sess-card.is-done{opacity:.45;}
+    .sess-card.is-done .sess-title{text-decoration:line-through;}
+    .sess-check{width:17px;height:17px;border-radius:5px;border:2px solid rgba(0,0,0,.22);background:rgba(255,255,255,.6);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;cursor:pointer;transition:background .12s;}
+    .sess-check.checked{background:rgba(0,0,0,.18);border-color:transparent;}
     .sess-title{font-size:.84rem;font-weight:500;flex:1;line-height:1.35;}
     .sess-title a{text-decoration:none;color:inherit;border-bottom:1px dashed rgba(0,0,0,.2);}
     .sess-title a:hover{border-bottom-color:transparent;}
@@ -131,6 +133,11 @@
 <div class="container">
   <div id="today-section"></div>
 
+  <!-- En-tête page -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
+    <div style="font-size:1.15rem;font-weight:700;color:#0f172a;">📋 Programme PSY2 Cadets</div>
+    <button onclick="openSettings()" style="display:flex;align-items:center;gap:.4rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:.42rem .85rem;font-size:.78rem;font-weight:600;color:#475569;cursor:pointer;">⚙️ Paramètres</button>
+  </div>
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card"><div class="stat-label">Temps total programme</div><div class="stat-val">~50h</div></div>
@@ -472,7 +479,7 @@ function renderSessionCard(t){
     ?`<a href="${t.lien}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${t.titre}</a>`
     :t.titre;
   return `<div class="sess-card sc-${t.cat}${isDone?' is-done':''}" onclick="openTraining('${t.id}')">
-    ${isDone?'<span class="sess-done-mark">✅</span>':''}
+    <span class="sess-check${isDone?' checked':''}" onclick="event.stopPropagation();toggleDone('${t.id}')" title="Marquer comme fait">${isDone?'✓':''}</span>
     <span class="sess-title">${titleContent}</span>
     <span class="sess-dur">${t.duree}</span>
   </div>`;
@@ -690,6 +697,15 @@ function markDone(){
   if(!existing)saveCurrentFiche('(marqué terminé sans analyse IA)');
   closeModal('modal-train');
   renderAll();
+}
+
+function toggleDone(taskId){
+  if(done.has(taskId)){done.delete(taskId);}
+  else{done.add(taskId);}
+  saveDone();
+  renderProgramme();
+  renderProgress();
+  renderToday();
 }
 
 // ── AI Call (streaming) ───────────────────────────────────────────────────────
